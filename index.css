@@ -126,6 +126,10 @@ dfn {
     img.black-svg {
         filter: invert(1);
     }
+
+    a.black-link, a.black-link:visited {
+        color: #EEE;
+    }
 }
 
 
