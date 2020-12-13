@@ -7,6 +7,7 @@ body {
     line-height: 1.5;
     background-color: #EEE;
     margin: 2rem;
+    font-family: sans-serif;
 }
 
 main {
@@ -46,7 +47,7 @@ main {
 }
 
 a {
-    color: #28a23e;
+    color: #07811d;
     text-decoration: none;
 }
 
@@ -55,7 +56,7 @@ a:hover {
 }
 
 a:visited {
-    color: #175d23;
+    color: #045a14;
 }
 
 a.black-link, a.black-link:visited {
@@ -92,4 +93,8 @@ section > h4, section > h2 {
 
 .link-with-logo > span {
     white-space: pre;
+}
+
+dfn {
+    font-style: normal;
 }
