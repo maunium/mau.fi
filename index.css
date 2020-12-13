@@ -35,6 +35,16 @@ main {
     }
 }
 
+@media screen and (max-width: 30rem) {
+    main {
+        padding: .5rem 1rem;
+    }
+
+    main.projects > h1 {
+        font-size: 1.5rem;
+    }
+}
+
 h1 {
     width: 100%;
     border-bottom: 1px solid gray;
@@ -49,8 +59,4 @@ section.contact > ul {
 
 section.contact > h4, section.contact > h3 {
     margin-bottom: .5rem;
-}
-
-details.projects {
-    margin-top: 1rem;
 }
