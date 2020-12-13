@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Your IP is {{ .RemoteIP }}</title>
+	<meta charset="utf-8"/>
+	<meta property="og:title" content="Your IP"/>
+	<meta property="og:description" content="Your IP is {{ .RemoteIP }}"/>
+	<meta property="og:url" content="https://maunium.net/ip/full.html"/>
+	<meta property="og:image" content="https://maunium.net/favicon.ico"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<style>
+		body {
+			margin: 32px auto;
+			max-width: 600px;
+			text-align: center;
+			font-family: sans-serif;
+		}
+		
+		@media screen and (max-width: 616px) {
+			body {
+				margin: 16px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<h3>Your IP address is</h3>
+	<h1>{{ .RemoteIP }}</h1>
+</body>
+</html>
