@@ -6,6 +6,7 @@ html {
 body {
     line-height: 1.5;
     background-color: #EEE;
+    color: #000;
     margin: 2rem;
     font-family: sans-serif;
 }
@@ -28,7 +29,7 @@ main {
 @media screen and (max-width: 35rem) {
     body {
         margin: 0;
-        background-color: white;
+        background-color: #FFF;
     }
 
     main {
@@ -97,4 +98,39 @@ section > h4, section > h2 {
 
 dfn {
     font-style: normal;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #000;
+        color: #EEE;
+    }
+
+    main {
+        background-color: #222;
+        box-shadow: 0 0 1rem #222;
+    }
+
+    a {
+        color: #84e094;
+    }
+
+    a:visited {
+        color: #2eba47;
+    }
+
+    img.black-svg {
+        filter: invert(1);
+    }
+}
+
+
+@media screen and (max-width: 35rem) and (prefers-color-scheme: dark) {
+    body {
+        background-color: #222;
+    }
+
+    main {
+        box-shadow: none;
+    }
 }
