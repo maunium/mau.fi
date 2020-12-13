@@ -45,6 +45,24 @@ main {
     }
 }
 
+a {
+    color: #28a23e;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #175d23;
+}
+
+a.black-link, a.black-link:visited {
+    color: black;
+    text-decoration: none;
+}
+
 h1 {
     width: 100%;
     border-bottom: 1px solid gray;
