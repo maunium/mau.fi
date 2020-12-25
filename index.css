@@ -13,15 +13,32 @@ body {
     color: #000;
     margin: 2rem;
     font-family: sans-serif;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(100vh - 4rem);
 }
 
 main {
     max-width: 45rem;
     box-sizing: border-box;
     background-color: #FFF;
-    margin: auto;
+    margin: 0 auto;
     padding: 2rem 3rem 2.5rem;
     box-shadow: 0 0 1rem rgba(0, 0, 0, 0.25);
+}
+
+footer {
+    font-size: .75rem;
+    max-width: 45rem;
+    width: 100%;
+    margin: 2rem auto 0;
+    box-sizing: border-box;
+}
+
+footer, footer a, footer a:visited {
+    color: #AAA;
 }
 
 @media screen and (max-width: 40rem) {
@@ -34,15 +51,21 @@ main {
     body {
         margin: 0;
         background-color: #FFF;
+        min-height: 100vh;
+    }
+
+    footer {
+        padding: 1rem 2rem 1.5rem;
     }
 
     main {
         box-shadow: none;
+        margin: 0;
     }
 }
 
 @media screen and (max-width: 30rem) {
-    main {
+    main, footer {
         padding: .5rem 1rem;
     }
 
