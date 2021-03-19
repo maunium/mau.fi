@@ -6,12 +6,13 @@ PGP key: `05838CAF9C817F234245D948BBA0F996FDDCE9AE`
 Old key: `27B368B425431BDA851B1D4C513CB62B324C2F47`  
 GitHub:  [tulir](https://github.com/tulir)  
 GitLab:  [mau.dev](https://mau.dev)  
-Keybase: [tulir](https://keybase.io/tulir)
+Telegram: [@tulir](https://t.me/tulir)  
+Twitter: [@tulir293](https://twitter.com/tulir293)  
+Reddit:  [u/tulir293](https://www.reddit.com/user/tulir293/)
 
 ### Duplicates of this file
 * [GitHub Gist](https://gist.github.com/tulir/d38f5db1aa814c19f23e113a253d14f8) (signature and renderer included)
 * [mau.fi](https://mau.fi/identity.md) ([signature](https://mau.fi/identity.md.asc), [rendered](https://mau.fi/identity.md.html), [rendered signature](https://mau.fi/identity.md.html.asc))
-* [Keybase](https://tulir.keybase.pub/identity.md) ([signature](https://tulir.keybase.pub/identity.md.asc), [rendered](https://tulir.keybase.pub/identity.md.html), [rendered signature](https://tulir.keybase.pub/identity.md.html.asc))
 * [cs.helsinki.fi](https://www.cs.helsinki.fi/u/tulir/identity.md) ([signature](https://www.cs.helsinki.fi/u/tulir/identity.md.asc), [rendered](https://www.cs.helsinki.fi/u/tulir/identity.md.html), [rendered signature](https://www.cs.helsinki.fi/u/tulir/identity.md.html.asc))
 
 ### Matrix devices
@@ -55,5 +56,5 @@ AQCvbRDOQkkwGE3+H3a2WibcO7vY/d79gKdqo+cixS7hBg==
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-Last updated 2021-02-19  
+Last updated 2021-03-19  
 Expires 2021-04-30
