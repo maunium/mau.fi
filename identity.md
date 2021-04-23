@@ -18,9 +18,9 @@ Reddit:  [u/tulir293](https://www.reddit.com/user/tulir293/)
 ### Matrix devices
 | Name     | ID           | Key                                                     |
 |----------|--------------|---------------------------------------------------------|
-| Maunium  | `OKFANZCOCA` | `ckvh GLl5 GavI OZNr CfGn 5Es8 d0xQ BVF/ sbBw JrYW 3UE` |
-| ThinkMau | `ZEWHVQDAAX` | `tfLA gDh8 6eBf YygW H7iR rhnq lNZJ ivXC 9yWx FW7i TKM` |
-| Mauwei   | `OEAZSCKDVW` | `PxiQ 3uHs BISv yE9H wuf7 P9sW e/Wa m3f4 IKMd /pD7 XNY` |
+| Maunium  | `CAZEMYIZNQ` | `vHZq Vfge eJPd 8vUw MabG SOnp tAVG Vcyl 0Y5R FFHK ecM` |
+| ThinkMau | `IGYVHWUCIN` | `KlvZ YFed eYrr eS6x pbo9 eyC8 TcXW I+YV dpgj wuUq UWw` |
+| Maukia   | `GUPRZYHODI` | `xc9X vJVD 4MMc KkNp 2EBI vJCo 8D68 gdnR sCNj Ce8P EVA` |
 
 
 ### PGP key
@@ -56,5 +56,5 @@ AQCvbRDOQkkwGE3+H3a2WibcO7vY/d79gKdqo+cixS7hBg==
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-Last updated 2021-03-19  
-Expires 2021-04-30
+Last updated 2021-04-24  
+Expires 2021-10-31
