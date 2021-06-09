@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>{{ .Req.Header.Get "User-Agent" }}</title>
+	<meta property="og:title" content="{{ .Req.Header.Get "User-Agent" }}"/>
+	<meta property="og:description" content="The user agent your URL previewer is connecting with"/>
+	<meta property="og:url" content="https://maunium.net/ua/ogp"/>
+</head>
+<body>
+	{{ .Req.Header.Get "User-Agent" }}
+</body>
+</html>
