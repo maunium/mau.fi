@@ -2,6 +2,7 @@
     "ip": "{{ .RemoteIP }}",
     "uri": "{{ .Req.URL }}",
     "host": "{{ .Host }}",
+    "sni": "{{ placeholder "http.request.tls.server_name" }}",
     "method": "{{ .Req.Method }}",
     "random_string": "{{ randAlphaNum 16 }}"
 }
