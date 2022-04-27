@@ -18,10 +18,10 @@ Reddit:  [u/tulir293](https://www.reddit.com/user/tulir293/)
 ### Matrix devices
 | Name     | ID           | Key                                                     |
 |----------|--------------|---------------------------------------------------------|
-| Maunium  | `CAZEMYIZNQ` | `vHZq Vfge eJPd 8vUw MabG SOnp tAVG Vcyl 0Y5R FFHK ecM` |
-| ThinkMau | `IGYVHWUCIN` | `KlvZ YFed eYrr eS6x pbo9 eyC8 TcXW I+YV dpgj wuUq UWw` |
-| Maukia   | `GUPRZYHODI` | `xc9X vJVD 4MMc KkNp 2EBI vJCo 8D68 gdnR sCNj Ce8P EVA` |
-
+| Maunium  | `DRFAULCGXU` | `4Fv/ 3jeZ nvJ9 v2Y2 7SIW ZA+2 8iv9 C1+y dZ7j 1ow/ MMc` |
+| ThinkMau | `OXSUVBRYLY` | `R3qI 61wY AjLu S1DE 38S1 9iqc 2RhA EJwo mD4Z ddxi /Hw` |
+| Maukia   | `WWCCYADIIT` | `CcHX 2pmL 28mq czJL SNDk sxQt pJdI Aka+ lb57 U9FW Ips` |
+| HydroMaukia | `AMWUEWMDKB` | `p0sI hcwQ uH4D joCd Pl47 n0So K8AI 83xS M5af +1xC gLs` |
 
 ### PGP key
 The new key signed with my old key can be found at [mau.fi/pgp.migrate](https://mau.fi/pgp.migrate)
@@ -56,5 +56,5 @@ AQCvbRDOQkkwGE3+H3a2WibcO7vY/d79gKdqo+cixS7hBg==
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-Last updated 2021-04-24  
-Expires 2021-10-31
+Last updated 2022-04-27  
+Expires 2022-10-31
