@@ -18,10 +18,9 @@ Reddit:  [u/tulir293](https://www.reddit.com/user/tulir293/)
 ### Matrix devices
 | Name     | ID           | Key                                                     |
 |----------|--------------|---------------------------------------------------------|
-| Maunium  | `DRFAULCGXU` | `4Fv/ 3jeZ nvJ9 v2Y2 7SIW ZA+2 8iv9 C1+y dZ7j 1ow/ MMc` |
+| Maunium  | `XQNPIGIFVV` | `sge9 olS5 AuQH ak1H KZtL 3N2Z eAjA +7GG Iikv vIH0 pq8` |
 | ThinkMau | `OXSUVBRYLY` | `R3qI 61wY AjLu S1DE 38S1 9iqc 2RhA EJwo mD4Z ddxi /Hw` |
-| Maukia   | `WWCCYADIIT` | `CcHX 2pmL 28mq czJL SNDk sxQt pJdI Aka+ lb57 U9FW Ips` |
-| HydroMaukia | `AMWUEWMDKB` | `p0sI hcwQ uH4D joCd Pl47 n0So K8AI 83xS M5af +1xC gLs` |
+| mauS22   | `CWEZUQFCLR` | `9YSc 1LQg zMVx Qtqe vtjw sGyJ 0Yh9 pV09 LtNa BLt0 jc4` |
 
 ### PGP key
 The new key signed with my old key can be found at [mau.fi/pgp.migrate](https://mau.fi/pgp.migrate)
@@ -56,5 +55,5 @@ AQCvbRDOQkkwGE3+H3a2WibcO7vY/d79gKdqo+cixS7hBg==
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-Last updated 2022-04-27  
+Last updated 2022-07-03  
 Expires 2022-10-31
