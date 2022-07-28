@@ -19,7 +19,7 @@ Reddit:  [u/tulir293](https://www.reddit.com/user/tulir293/)
 | Name     | ID           | Key                                                     |
 |----------|--------------|---------------------------------------------------------|
 | Maunium  | `XQNPIGIFVV` | `sge9 olS5 AuQH ak1H KZtL 3N2Z eAjA +7GG Iikv vIH0 pq8` |
-| ThinkMau | `OXSUVBRYLY` | `R3qI 61wY AjLu S1DE 38S1 9iqc 2RhA EJwo mD4Z ddxi /Hw` |
+| ThinkMau | `JQEWTHINOR` | `5jeO +uiM rp1B 4Xna ofQt IDq9 FWrY B0To UGMV l4Mt BFc` |
 | mauS22   | `CWEZUQFCLR` | `9YSc 1LQg zMVx Qtqe vtjw sGyJ 0Yh9 pV09 LtNa BLt0 jc4` |
 
 ### PGP key
@@ -55,5 +55,5 @@ AQCvbRDOQkkwGE3+H3a2WibcO7vY/d79gKdqo+cixS7hBg==
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-Last updated 2022-07-03  
+Last updated 2022-07-28  
 Expires 2022-10-31
