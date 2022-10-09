@@ -1,8 +1,16 @@
 {
     "ip": "{{ .RemoteIP }}",
-    "uri": "{{ .Req.URL }}",
-    "host": "{{ .Host }}",
-    "sni": "{{ placeholder "http.request.tls.server_name" }}",
-    "method": "{{ .Req.Method }}",
+    "tls": {
+        "resumed": {{ placeholder "http.request.tls.resumed" }},
+        "version": "{{ placeholder "http.request.tls.version" }}",
+        "proto": "{{ placeholder "http.request.tls.proto" }}",
+        "sni": "{{ placeholder "http.request.tls.server_name" }}"
+    },
+    "http": {
+        "proto": "{{ .Req.Proto }}",
+        "method": "{{ .Req.Method }}",
+        "host": "{{ .Host }}",
+        "uri": "{{ .Req.URL }}"
+    },
     "random_string": "{{ randAlphaNum 16 }}"
 }
