@@ -39,6 +39,8 @@ type Post struct {
 	CreatedAt time.Time     `yaml:"-"`
 	UpdatedAt time.Time     `yaml:"-"`
 	Content   template.HTML `yaml:"-"`
+
+	ContentWithoutLinkifiedHeaders string `yaml:"-"`
 }
 
 type Tag struct {
@@ -62,7 +64,7 @@ func (p *Post) ToRSS() *feeds.Item {
 		Id:          p.Slug,
 		Updated:     p.UpdatedAt,
 		Created:     p.CreatedAt,
-		Content:     string(p.Content),
+		Content:     p.ContentWithoutLinkifiedHeaders,
 	}
 }
 
@@ -194,13 +196,15 @@ func main() {
 		ctx := parser.NewContext()
 		exerrors.PanicIfNotNil(gm.Convert(data, &buf, parser.WithContext(ctx)))
 		exerrors.PanicIfNotNil(frontmatter.Get(ctx).Decode(&meta))
-		contentStr := buf.String()
-		contentStr = headerRegex.ReplaceAllString(contentStr, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`)
-		meta.Content = template.HTML(contentStr)
-		meta.Words = WordCount(contentStr)
+		meta.ContentWithoutLinkifiedHeaders = buf.String()
+		meta.Content = template.HTML(headerRegex.ReplaceAllString(meta.ContentWithoutLinkifiedHeaders, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`))
+		meta.Words = WordCount(meta.ContentWithoutLinkifiedHeaders)
 		meta.CreatedAt, meta.UpdatedAt = getFileDates(path)
 		meta.Date = meta.CreatedAt.Format("2006-01-02")
-		meta.FirstParagraph = template.HTML(firstParagraphRegex.FindStringSubmatch(contentStr)[1])
+		firstParagraphMatch := firstParagraphRegex.FindStringSubmatch(meta.ContentWithoutLinkifiedHeaders)
+		if firstParagraphMatch != nil {
+			meta.FirstParagraph = template.HTML(firstParagraphMatch[1])
+		}
 
 		exerrors.PanicIfNotNil(os.MkdirAll(meta.Slug, 0755))
 		mustWriteFile(filepath.Join(meta.Slug, "index.html"), templateExecutor(tpl, "post.gohtml", &meta))
