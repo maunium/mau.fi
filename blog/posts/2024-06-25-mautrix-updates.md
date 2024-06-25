@@ -1,6 +1,6 @@
 ---
 title: Project updates (and a blog)
-summary: A summary of things that have happened in the mautrix projects
+summary: A summary of things that have happened in the mautrix projects in the first half of 2024
 slug: 2024-h1-mautrix-updates
 tags:
 - mautrix
