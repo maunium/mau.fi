@@ -30,6 +30,7 @@ type Post struct {
 	Summary string   `yaml:"summary"`
 	Slug    string   `yaml:"slug"`
 	Tags    []string `yaml:"tags"`
+	Draft   bool     `yaml:"draft"`
 
 	FirstParagraph template.HTML `yaml:"-"`
 	Words          int           `yaml:"-"`
@@ -200,11 +201,15 @@ func main() {
 		meta.CreatedAt, meta.UpdatedAt = getFileDates(path)
 		meta.Date = meta.CreatedAt.Format("2006-01-02")
 		meta.FirstParagraph = template.HTML(firstParagraphRegex.FindStringSubmatch(contentStr)[1])
-		posts = append(posts, &meta)
 
 		exerrors.PanicIfNotNil(os.MkdirAll(meta.Slug, 0755))
 		mustWriteFile(filepath.Join(meta.Slug, "index.html"), templateExecutor(tpl, "post.gohtml", &meta))
 
+		if meta.Draft {
+			continue
+		}
+
+		posts = append(posts, &meta)
 		feed.Items = append(feed.Items, meta.ToRSS())
 		for _, tag := range meta.Tags {
 			tagSlug := TagNameToSlug(tag)
