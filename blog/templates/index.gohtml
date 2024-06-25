@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Blog - Tulir Asokan</title>
+    <link rel="icon" href="/favicon.png" type="image/png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="alternate" type="application/rss+xml" title="RSS feed for mau.fi/blog" href="/blog/index.rss" />
+    <link rel="alternate" type="application/atom+xml" title="Atom feed for mau.fi/blog" href="/blog/index.atom" />
+    <link rel="alternate" type="application/feed+json" title="JSON feed for mau.fi/blog" href="/blog/index.json" />
+    <meta property="og:title" content="Blog - Tulir Asokan"/>
+    <meta property="og:site_name" content="Blog - Tulir Asokan"/>
+    <meta property="og:description" content=""/>
+    <meta property="og:url" content="https://mau.fi/blog/"/>
+    <meta property="og:image" content="/favicon.png"/>
+    <style>
+        {{ include "/index.css" }}
+    </style>
+</head>
+<body>
+    <main class="blog-index">
+        <h1><a class="black-link" href="/">Tulir Asokan</a> / Blog</h1>
+        {{ template "mixin-post-list.gohtml" . }}
+        <p>
+            <a href="/blog/index.rss">RSS</a> /
+            <a href="/blog/index.atom">Atom</a> /
+            <a href="/blog/index.json">JSON feed</a>
+        </p>
+    </main>
+    {{ template "footer.gohtml" }}
+</body>
+</html>

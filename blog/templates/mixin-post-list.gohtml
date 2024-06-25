@@ -1,0 +1,12 @@
+{{ range $index, $post := . }}
+    <article>
+        <header class="blog-list-header">
+            <h2><a href="/blog/{{ $post.Slug }}/">{{ $post.Title }}</a></h2>
+            {{ template "mixin-post-meta.gohtml" . }}
+        </header>
+        <p>
+            {{ $post.FirstParagraph }}
+            <a href="/blog/{{ $post.Slug }}/">Read more...</a>
+        </p>
+    </article>
+{{ end }}

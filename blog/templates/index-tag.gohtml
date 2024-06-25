@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Tulir Asokan - Blog - {{ .Name }}</title>
+    <link rel="icon" href="/favicon.png" type="image/png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="alternate" type="application/rss+xml" title="RSS feed for mau.fi/blog/tags/{{ .Slug }}" href="index.rss" />
+    <link rel="alternate" type="application/atom+xml" title="Atom feed for mau.fi/blog/tags/{{ .Slug }}" href="index.atom" />
+    <link rel="alternate" type="application/feed+json" title="JSON feed for mau.fi/blog/tags/{{ .Slug }}" href="index.json" />
+    <meta property="og:title" content="Tulir Asokan - Blog - {{ .Name }}"/>
+    <meta property="og:site_name" content="Tulir Asokan - Blog"/>
+    <meta property="og:description" content=""/>
+    <meta property="og:url" content="https://mau.fi/blog/tags/{{ .Slug }}"/>
+    <meta property="og:image" content="/favicon.png"/>
+    <style>
+        {{ include "/index.css" }}
+    </style>
+</head>
+<body>
+    <main class="blog-tag-index">
+        <h1><a class="black-link" href="/">Tulir Asokan</a> / <a class="black-link" href="/blog">Blog</a> / {{ .Name }}</h1>
+        {{ template "mixin-post-list.gohtml" .Posts }}
+        <p>
+            <a href="index.rss">RSS</a> /
+            <a href="index.atom">Atom</a> /
+            <a href="index.json">JSON feed</a>
+        </p>
+    </main>
+    {{ template "footer.gohtml" }}
+</body>
+</html>

@@ -1,0 +1,13 @@
+deploy:
+  stage: deploy
+  image: golang:1-alpine
+  tags:
+  - webdeploy
+  only:
+  - main
+  script:
+  - cd blog
+  - go run ./generate/
+  - cd ..
+  - rsync -rcthvl --delete .git/ /srv/web/.git/modules/mau.fi/
+  - rsync -rcthvl --exclude .git --delete . /srv/web/mau.fi/

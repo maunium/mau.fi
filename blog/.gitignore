@@ -1,0 +1,5 @@
+*.html
+!generate/index.html
+index.atom
+index.rss
+index.json
