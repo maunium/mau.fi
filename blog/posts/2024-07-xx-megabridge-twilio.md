@@ -395,13 +395,13 @@ appropriate instructions. This is also how refreshing QR codes should be done.
 With everything else out of the way, let's get to the main point: bridging
 messages between Twilio and Matrix.
 
-### Matrix -> Twilio
+### Matrix → Twilio
 To receive messages from Matrix, we need to implement the `HandleMatrixMessage`
 function that we skipped over in the network API section.
 
 TODO
 
-### Twilio -> Matrix
+### Twilio → Matrix
 To receive messages from Twilio, we need to implement the `ReceiveMessages`
 function that we created to handle HTTP webhooks.
 

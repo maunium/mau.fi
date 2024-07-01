@@ -14,8 +14,10 @@ import (
 	"time"
 	"unsafe"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/gorilla/feeds"
 	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
@@ -73,6 +75,15 @@ var gm = goldmark.New(
 		extension.Strikethrough,
 		extension.Table,
 		&frontmatter.Extender{},
+		highlighting.NewHighlighting(
+			highlighting.WithStyle("solarized-light"),
+			highlighting.WithFormatOptions(
+				chromahtml.WithClasses(true),
+				chromahtml.LineNumbersInTable(true),
+				chromahtml.WithAllClasses(true),
+				chromahtml.WithLineNumbers(true),
+			),
+		),
 	),
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),

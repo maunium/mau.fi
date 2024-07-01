@@ -136,6 +136,22 @@ main > p:last-child {
     margin-bottom: 0;
 }
 
+code, pre, .chroma {
+    font-family: "Fira Code", monospace;
+}
+
+code {
+    font-size: 1em;
+}
+
+pre {
+    tab-size: 4;
+}
+
+.chroma {
+    overflow-x: scroll;
+}
+
 header.blog-post-header {
     border-bottom: 1px solid gray;
     margin-top: 1rem;
