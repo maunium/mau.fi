@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -150,6 +152,22 @@ type SitemapParams struct {
 	BlogLastMod time.Time
 }
 
+var cssURLRegex = regexp.MustCompile(`url\("(/.+?)"\)`)
+
+func inlineifyURLs(input string) string {
+	return cssURLRegex.ReplaceAllStringFunc(input, func(s string) string {
+		filePath := cssURLRegex.FindStringSubmatch(s)[1]
+		var mime string
+		switch path.Ext(filePath) {
+		case ".svg":
+			mime = "image/svg+xml"
+		default:
+			return s
+		}
+		return fmt.Sprintf(`url("data:%s,%s")`, mime, base64.StdEncoding.EncodeToString(exerrors.Must(os.ReadFile(".."+filePath))))
+	})
+}
+
 func main() {
 	sitemapTplData := exerrors.Must(os.ReadFile("../sitemap.xml.tmpl"))
 	sitemapTpl := exerrors.Must(texttemplate.New("sitemap").Parse(string(sitemapTplData)))
@@ -162,7 +180,7 @@ func main() {
 			dataStr := unsafe.String(unsafe.SliceData(data), len(data))
 			switch filepath.Ext(name) {
 			case ".css":
-				return template.CSS(dataStr)
+				return template.CSS(inlineifyURLs(dataStr))
 			case ".html":
 				return template.HTML(dataStr)
 			case ".js":
