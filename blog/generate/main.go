@@ -164,7 +164,7 @@ func inlineifyURLs(input string) string {
 		default:
 			return s
 		}
-		return fmt.Sprintf(`url("data:%s,%s")`, mime, base64.StdEncoding.EncodeToString(exerrors.Must(os.ReadFile(".."+filePath))))
+		return fmt.Sprintf(`url("data:%s;base64,%s")`, mime, base64.StdEncoding.EncodeToString(exerrors.Must(os.ReadFile(".."+filePath))))
 	})
 }
 
