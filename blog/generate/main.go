@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -164,7 +165,13 @@ func inlineifyURLs(input string) string {
 		default:
 			return s
 		}
-		return fmt.Sprintf(`url("data:%s;base64,%s")`, mime, base64.StdEncoding.EncodeToString(exerrors.Must(os.ReadFile(".."+filePath))))
+		data := exerrors.Must(os.ReadFile(".." + filePath))
+		encodedData := url.PathEscape(string(data))
+		if len(encodedData)+7 < base64.StdEncoding.EncodedLen(len(data)) {
+			return fmt.Sprintf(`url("data:%s,%s")`, mime, encodedData)
+		} else {
+			return fmt.Sprintf(`url("data:%s;base64,%s")`, mime, base64.StdEncoding.EncodeToString(data))
+		}
 	})
 }
 
