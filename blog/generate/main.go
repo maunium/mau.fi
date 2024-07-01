@@ -165,6 +165,8 @@ func main() {
 				return template.CSS(dataStr)
 			case ".html":
 				return template.HTML(dataStr)
+			case ".js":
+				return template.JS(dataStr)
 			default:
 				return dataStr
 			}

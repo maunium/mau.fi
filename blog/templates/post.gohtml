@@ -24,8 +24,8 @@
     <style>
         {{ include "/index.css" }}
         {{ if .HasCodeBlocks }}
-            {{ include "solarized-light.css" }}
-            {{ include "solarized-dark.css" }}
+            {{ include "/blog/extra/solarized-light.css" }}
+            {{ include "/blog/extra/solarized-dark.css" }}
         {{ end }}
     </style>
 </head>
@@ -41,5 +41,8 @@
         </article>
     </main>
     {{ template "footer.gohtml" }}
+    {{ if .HasCodeBlocks }}
+        <script async src="/blog/extra/copy.js"></script>
+    {{ end }}
 </body>
 </html>
