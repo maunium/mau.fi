@@ -34,6 +34,8 @@ type Post struct {
 	Tags    []string `yaml:"tags"`
 	Draft   bool     `yaml:"draft"`
 
+	HasCodeBlocks bool `yaml:"has_code_blocks"`
+
 	FirstParagraph template.HTML `yaml:"-"`
 	Words          int           `yaml:"-"`
 
@@ -212,6 +214,7 @@ func main() {
 		meta.Words = WordCount(meta.ContentWithoutLinkifiedHeaders)
 		meta.CreatedAt, meta.UpdatedAt = getFileDates(path)
 		meta.Date = meta.CreatedAt.Format("2006-01-02")
+		meta.HasCodeBlocks = strings.Contains(meta.ContentWithoutLinkifiedHeaders, `class="chroma"`)
 		firstParagraphMatch := firstParagraphRegex.FindStringSubmatch(meta.ContentWithoutLinkifiedHeaders)
 		if firstParagraphMatch != nil {
 			meta.FirstParagraph = template.HTML(firstParagraphMatch[1])

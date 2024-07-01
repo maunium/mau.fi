@@ -23,8 +23,10 @@
     {{ end -}}
     <style>
         {{ include "/index.css" }}
-        {{ include "solarized-light.css" }}
-        {{ include "solarized-dark.css" }}
+        {{ if .HasCodeBlocks }}
+            {{ include "solarized-light.css" }}
+            {{ include "solarized-dark.css" }}
+        {{ end }}
     </style>
 </head>
 <body>
