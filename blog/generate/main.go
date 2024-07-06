@@ -138,6 +138,13 @@ func words(node *html.Node) int {
 	case html.TextNode:
 		return len(strings.Fields(node.Data))
 	case html.ElementNode, html.DocumentNode:
+		if node.Data == "pre" {
+			// Ignore code blocks entirely
+			return 0
+		} else if node.Data == "code" {
+			// Treat inline code as one word
+			return 1
+		}
 		count := 0
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
 			count += words(c)
