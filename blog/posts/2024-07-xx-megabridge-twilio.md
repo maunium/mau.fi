@@ -230,13 +230,36 @@ explicit assertions become very useful, as there's nothing else ensuring the
 correct functions are implemented.
 
 ### `Connect` and `Disconnect`
-Since Twilio uses webhooks, these two methods don't need to do anything. For
-networks with a persistent connection, this is where you'd set up the connection
-and disconnect it.
+For most networks which use persistent connections, this is where you'd set up
+the connection and disconnect it. Twilio doesn't use a persistent connection, so
+technically we don't need to do anything here. However, we should still check
+access token validity here.
 
 ```go
-func (tc *TwilioClient) Connect(ctx context.Context) error { return nil }
-func (tc *TwilioClient) Disconnect()                       {}
+func (tc *TwilioClient) Connect(ctx context.Context) error {
+	phoneNumbers, err := tc.Twilio.Api.ListIncomingPhoneNumber(nil)
+	if err != nil {
+		return fmt.Errorf("failed to list phone numbers: %w", err)
+	}
+	numberInUse := tc.UserLogin.Metadata.Extra["phone"].(string)
+	var numberFound bool
+	for _, number := range phoneNumbers {
+		if number.PhoneNumber != nil && *number.PhoneNumber == numberInUse {
+			numberFound = true
+			break
+		}
+	}
+	if !numberFound {
+		return fmt.Errorf("phone number %s not found on account", numberInUse)
+	}
+	return nil
+}
+```
+
+Disconnect doesn't need to do anything since there's no persistent connection.
+
+```go
+func (tc *TwilioClient) Disconnect() {}
 ```
 
 ### `IsLoggedIn`
@@ -290,6 +313,25 @@ not all) will define that `UserLoginID`s are the same as `UserID`s. However,
 identifiers do have some uniqueness expectations that the network connector must
 meet.
 
+For Twilio, we'll define the identifiers as follows:
+
+* `UserID`s are E.164 phone numbers without the leading `+`.
+* `PortalID`s are equivalent to `UserID`s.
+* `MessageID`s are Twilio message SIDs.
+* `UserLoginID`s are account SID and phone SID joined with a `:`.
+
+For convenience, we'll define some functions to cast strings into those types:
+
+```go
+func makeUserID(e164Phone string) networkid.UserID {
+	return networkid.UserID(strings.TrimLeft(e164Phone, "+"))
+}
+
+func makeUserLoginID(accountSID, phoneSID string) networkid.UserLoginID {
+	return networkid.UserLoginID(fmt.Sprintf("%s:%s", accountSID, phoneSID))
+}
+```
+
 See the [networkid module godocs](https://pkg.go.dev/maunium.net/go/mautrix/bridgev2/networkid)
 for docs on all the different types of identifiers.
 
@@ -300,8 +342,24 @@ For most networks where user and login IDs are the same, you can just check for
 equality.
 
 For this bridge, we're segregating different logins to have their own portals,
-which means this function is not actually necessary, and we can just hardcode it
-to return `false`.
+which means this function is not actually necessary, and we could just hardcode
+it to return `false`. It's not hard to implement though, so let's do it anyway:
+
+```go
+func (tc *TwilioClient) IsThisUser(ctx context.Context, userID networkid.UserID) bool {
+	phoneNum := tc.UserLogin.Metadata.Extra["phone"].(string)
+	return makeUserID(phoneNum) == userID
+}
+```
+
+If you were to define UserLoginID and UserID the same way, you could have an
+even simpler check:
+
+```go
+func (tc *NotTwilioClient) IsThisUser(ctx context.Context, userID networkid.UserID) bool {
+	return networkid.UserID(tc.UserLogin.ID) == userID
+}
+```
 
 ### `GetChatInfo`
 `GetChatInfo` returns the info for a given chat. All the values in the response
@@ -311,14 +369,60 @@ don't have names, topics or avatars. However, even DMs do have members. The
 member list should always include all participants, so both the Matrix user and
 the remote user in DMs.
 
-TODO Twilio code
+We're only handling DMs in this bridge, so we don't need to return anything
+other than the member list.
+
+```go
+func (tc *TwilioClient) GetChatInfo(ctx context.Context, portal *bridgev2.Portal) (*bridgev2.ChatInfo, error) {
+	return &bridgev2.ChatInfo{
+		Members: &bridgev2.ChatMemberList{
+			IsFull: true,
+			Members: []bridgev2.ChatMember{
+				{
+					EventSender: bridgev2.EventSender{
+						IsFromMe: true,
+						Sender:   makeUserID(tc.UserLogin.Metadata.Extra["phone"].(string)),
+					},
+					// This could be omitted, but leave it in to be explicit.
+					Membership: event.MembershipJoin,
+					// Make the user moderator, so they can adjust the room metadata if they want to.
+					PowerLevel: 50,
+				},
+				{
+					EventSender: bridgev2.EventSender{
+						Sender: networkid.UserID(portal.ID),
+					},
+					Membership: event.MembershipJoin,
+					PowerLevel: 50,
+				},
+			},
+		},
+	}, nil
+}
+```
 
 ### `GetUserInfo`
 `GetUserInfo` is basically the same as `GetChatInfo`, but it returns info for a
 given user instead of a chat. The returned info will be applied as the ghost
 user's profile on Matrix.
 
-TODO Twilio code
+Because we're bridging SMS and don't have a contact lits, we don't really have
+any other info than the phone number itself. If we wanted to be fancy, we could
+format the phone number nicely for `Name`, but I couldn't find any convenient
+libraries similar to phonenumbers for Python.
+
+In addition to `Name`, we set `Identifiers` which is a list of URIs that
+represent the user. In this case, we're using the `tel:` scheme, but you could
+also include network-specific @usernames with a custom scheme here.
+
+```go
+func (tc *TwilioClient) GetUserInfo(ctx context.Context, ghost *bridgev2.Ghost) (*bridgev2.UserInfo, error) {
+	return &bridgev2.UserInfo{
+		Identifiers: []string{fmt.Sprintf("tel:+%s", ghost.ID)},
+		Name:        ptr.Ptr(fmt.Sprintf("+%s", ghost.ID)),
+	}, nil
+}
+```
 
 ## The login process
 In the first section about the network connector, we skipped the `GetLoginFlows`
@@ -361,14 +465,14 @@ connector:
 ```go
 func (tc *TwilioConnector) GetLoginFlows() []bridgev2.LoginFlow {
 	return []bridgev2.LoginFlow{{
-		Name:        "API key & secret",
-		Description: "Log in with your Twilio account SID, API key and API secret",
-		ID:          "api-key-secret",
+		Name:        "Auth token",
+		Description: "Log in with your Twilio account SID and auth token",
+		ID:          "auth-token",
 	}}
 }
 
 func (tc *TwilioConnector) CreateLogin(ctx context.Context, user *bridgev2.User, flowID string) (bridgev2.LoginProcess, error) {
-	if flowID != "api-key-secret" {
+	if flowID != "auth-token" {
 		return nil, fmt.Errorf("unknown login flow ID")
 	}
 	return &TwilioLogin{User: user}, nil
@@ -479,6 +583,7 @@ func (tl *TwilioLogin) submitAPIKeys(ctx context.Context, input map[string]strin
 		Password:   tl.AuthToken,
 		AccountSid: tl.AccountSID,
 	})
+	// Get the list of phone numbers. This doubles as a way to verify the credentials are valid.
 	phoneNumbers, err := twilioClient.Api.ListIncomingPhoneNumber(nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list phone numbers: %w", err)
@@ -524,14 +629,13 @@ func (tl *TwilioLogin) submitAPIKeys(ctx context.Context, input map[string]strin
 and the phone number submit function
 
 ```go
-var numberCleaner = strings.NewReplacer("-", "", " ", "", "(", "", ")", "")
-
 func (tl *TwilioLogin) submitChosenPhoneNumber(ctx context.Context, input map[string]string) (*bridgev2.LoginStep, error) {
-	chosenNumber := numberCleaner.Replace(input["chosen_number"])
 	numberIdx := slices.IndexFunc(tl.PhoneNumbers, func(e twilioPhoneNumber) bool {
-		return e.Number == chosenNumber
+		return e.Number == input["chosen_number"]
 	})
 	if numberIdx == -1 {
+		// We could also return a new LoginStep here if we wanted to allow the user to retry.
+		// Errors are always fatal, so returning an error here will cancel the login process.
 		return nil, fmt.Errorf("invalid phone number")
 	}
 	return tl.finishLogin(ctx, tl.PhoneNumbers[numberIdx])
@@ -544,7 +648,7 @@ creates the `UserLogin` object.
 ```go
 func (tl *TwilioLogin) finishLogin(ctx context.Context, phoneNumber twilioPhoneNumber) (*bridgev2.LoginStep, error) {
 	ul, err := tl.User.NewLogin(ctx, &database.UserLogin{
-		ID: networkid.UserLoginID(tl.AccountSID),
+		ID: makeUserLoginID(tl.AccountSID, phoneNumber.SID),
 		Metadata: database.UserLoginMetadata{
 			StandardUserLoginMetadata: database.StandardUserLoginMetadata{
 				RemoteName: phoneNumber.PrettyNumber,
@@ -561,7 +665,7 @@ func (tl *TwilioLogin) finishLogin(ctx context.Context, phoneNumber twilioPhoneN
 			login.Client = &TwilioClient{
 				UserLogin:        login,
 				Twilio:           tl.Client,
-				RequestValidator: client.NewRequestValidator(tl.AuthToken),
+				RequestValidator: tclient.NewRequestValidator(tl.AuthToken),
 			}
 			return nil
 		},
@@ -569,6 +673,17 @@ func (tl *TwilioLogin) finishLogin(ctx context.Context, phoneNumber twilioPhoneN
 	if err != nil {
 		return nil, err
 	}
+	tc := ul.Client.(*TwilioClient)
+	// In addition to creating the UserLogin, we'll also want to set the webhook URL for the phone number.
+	_, err = tc.Twilio.Api.UpdateIncomingPhoneNumber(phoneNumber.SID, &openapi.UpdateIncomingPhoneNumberParams{
+		SmsMethod: ptr.Ptr(http.MethodPost),
+		SmsUrl:    ptr.Ptr(tc.GetWebhookURL()),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to set webhook URL for phone number: %w", err)
+	}
+	// Finally, return the special complete step indicating the login was successful.
+	// It doesn't have any params other than the UserLogin we just created.
 	return &bridgev2.LoginStep{
 		Type:         bridgev2.LoginStepTypeComplete,
 		StepID:       "fi.mau.twilio.complete",
@@ -608,9 +723,77 @@ TODO
 
 ### Twilio → Matrix
 To receive messages from Twilio, we need to implement the `ReceiveMessages`
-function that we created to handle HTTP webhooks.
+function that we created to handle HTTP webhooks. Before that, let's define the
+webhook URLs, which was used in the login section.
 
-TODO
+```go
+func (tc *TwilioClient) GetWebhookURL() string {
+	server := tc.UserLogin.Bridge.Matrix.(bridgev2.MatrixConnectorWithServer)
+	return fmt.Sprintf("%s/_twilio/%s/receive", server.GetPublicAddress(), tc.UserLogin.ID)
+}
+```
+
+```go
+func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request) {
+	// First make sure the signature header is present and that the request body is valid form data.
+	sig := r.Header.Get("X-Twilio-Signature")
+	if sig == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("Missing signature header\n"))
+		return
+	}
+
+	params := make(map[string]string)
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("Failed to parse form data\n"))
+		return
+	}
+	for key, value := range r.PostForm {
+		params[key] = value[0]
+	}
+
+	// Get the user login based on the path. We need it to find the right token
+	// to use for validating the request signature.
+	loginID := mux.Vars(r)["loginID"]
+	login := tc.br.GetCachedUserLoginByID(networkid.UserLoginID(loginID))
+	if login == nil {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte("Unrecognized login ID in request path\n"))
+		return
+	}
+	client := login.Client.(*TwilioClient)
+
+	// Now that we have the client, validate the request.
+	if !client.RequestValidator.Validate(client.GetWebhookURL(), params, sig) {
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte("Invalid signature\n"))
+		return
+	}
+
+	// Pass the request to the client for handling. This is where everything actually happens.
+	client.HandleWebhook(r.Context(), params)
+
+	// We don't want to respond immediately, so just send a blank TwiML response.
+	twimlResult, err := twiml.Messages(nil)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.Header().Set("Content-Type", "text/xml")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(twimlResult))
+	}
+}
+```
+
+Finally, we need the actual handling function:
+
+```go
+func (tc *TwilioClient) HandleWebhook(ctx context.Context, params map[string]string) {
+
+}
+```
 
 ## Main function
 Now that we have a functional network connector, all that's left is to wrap it
