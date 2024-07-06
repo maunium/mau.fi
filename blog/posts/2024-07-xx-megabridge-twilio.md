@@ -10,7 +10,8 @@ tags:
 draft: true
 ---
 In this post, I'll go over all the steps necessary to build a Twilio bridge
-using the new bridgev2 module in mautrix-go.
+using the new bridgev2 module in mautrix-go. The whole bridge can be found at
+[github.com/mautrix/twilio](https://github.com/mautrix/twilio).
 
 ## Getting started with a new Go project
 The first step to make a new Go project is to create a new directory and run
