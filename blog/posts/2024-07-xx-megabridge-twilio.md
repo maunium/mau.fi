@@ -115,6 +115,7 @@ func (tc *TwilioConnector) GetName() bridgev2.BridgeName {
 		NetworkIcon:      "mxc://maunium.net/FYuKJHaCrSeSpvBJfHwgYylP",
 		NetworkID:        "twilio",
 		BeeperBridgeType: "go.mau.fi/mautrix-twilio",
+		DefaultPort:      29322,
 	}
 }
 ```
@@ -194,10 +195,12 @@ back to later.
 
 ```go
 func (tc *TwilioConnector) LoadUserLogin(ctx context.Context, login *bridgev2.UserLogin) error {
+	accountSID := login.Metadata.Extra["account_sid"].(string)
 	authToken := login.Metadata.Extra["auth_token"].(string)
 	restClient := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username:   accountSID,
 		Password:   authToken,
-		AccountSid: login.Metadata.Extra["account_sid"].(string),
+		AccountSid: accountSID,
 	})
 	validator := client.NewRequestValidator(authToken)
 	login.Client = &TwilioClient{
@@ -325,6 +328,10 @@ For convenience, we'll define some functions to cast strings into those types:
 ```go
 func makeUserID(e164Phone string) networkid.UserID {
 	return networkid.UserID(strings.TrimLeft(e164Phone, "+"))
+}
+
+func makePortalID(e164Phone string) networkid.PortalID {
+	return networkid.PortalID(strings.TrimLeft(e164Phone, "+"))
 }
 
 func makeUserLoginID(accountSID, phoneSID string) networkid.UserLoginID {
@@ -580,6 +587,7 @@ func (tl *TwilioLogin) submitAPIKeys(ctx context.Context, input map[string]strin
 	tl.AccountSID = input["account_sid"]
 	tl.AuthToken = input["auth_token"]
 	twilioClient := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username:   tl.AccountSID,
 		Password:   tl.AuthToken,
 		AccountSid: tl.AccountSID,
 	})
@@ -715,12 +723,6 @@ appropriate instructions. This is also how refreshing QR codes should be done.
 With everything else out of the way, let's get to the main point: bridging
 messages between Twilio and Matrix.
 
-### Matrix → Twilio
-To receive messages from Matrix, we need to implement the `HandleMatrixMessage`
-function that we skipped over in the network API section.
-
-TODO
-
 ### Twilio → Matrix
 To receive messages from Twilio, we need to implement the `ReceiveMessages`
 function that we created to handle HTTP webhooks. Before that, let's define the
@@ -787,11 +789,80 @@ func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request
 }
 ```
 
-Finally, we need the actual handling function:
+Finally, we need the actual handling function. All we really need to do is pass
+the event to the central bridge. To do that, we need to extract metadata like
+the portal and message IDs, and provide a converter function to actually convert
+the message into a Matrix event.
+
+Simple connectors can use the `bridgev2.SimpleRemoteEvent` struct as the remote
+event, but for more complicated connectors, it often makes sense to create an
+interface which implements `bridgev2.RemoteEvent`. That way, the interface
+methods can figure out the appropriate data to return, instead of having to fill
+a struct for every different event type.
 
 ```go
 func (tc *TwilioClient) HandleWebhook(ctx context.Context, params map[string]string) {
+	tc.UserLogin.Bridge.QueueRemoteEvent(tc.UserLogin, &bridgev2.SimpleRemoteEvent[map[string]string]{
+		Type: bridgev2.RemoteEventMessage,
+		LogContext: func(c zerolog.Context) zerolog.Context {
+			return c.
+				Str("from", params["From"]).
+				Str("message_id", params["MessageSid"])
+		},
+		PortalKey: networkid.PortalKey{
+			ID:       makePortalID(params["From"]),
+			Receiver: tc.UserLogin.ID,
+		},
+		Data:         params,
+		CreatePortal: true,
+		ID:           networkid.MessageID(params["MessageSid"]),
+		Sender: bridgev2.EventSender{
+			Sender: makeUserID(params["From"]),
+		},
+		Timestamp:          time.Now(),
+		ConvertMessageFunc: tc.convertMessage,
+	})
+}
+```
 
+The convert message function is also very simple, as we only support plain text
+messages for now.
+
+```go
+func (tc *TwilioClient) convertMessage(ctx context.Context, portal *bridgev2.Portal, intent bridgev2.MatrixAPI, data map[string]string) (*bridgev2.ConvertedMessage, error) {
+	return &bridgev2.ConvertedMessage{
+		Parts: []*bridgev2.ConvertedMessagePart{{
+			Type: event.EventMessage,
+			Content: &event.MessageEventContent{
+				MsgType: event.MsgText,
+				Body:    data["Body"],
+			},
+		}},
+	}, nil
+}
+```
+
+### Matrix → Twilio
+To receive messages from Matrix, we need to implement the `HandleMatrixMessage`
+function that we skipped over in the network API section. Responding is very
+simple, we just call the Twilio API and return the message ID.
+
+```go
+func (tc *TwilioClient) HandleMatrixMessage(ctx context.Context, msg *bridgev2.MatrixMessage) (message *bridgev2.MatrixMessageResponse, err error) {
+	resp, err := tc.Twilio.Api.CreateMessage(&openapi.CreateMessageParams{
+		To:   ptr.Ptr(fmt.Sprintf("+%s", msg.Portal.ID)),
+		From: ptr.Ptr(tc.UserLogin.Metadata.Extra["phone"].(string)),
+		Body: ptr.Ptr(msg.Content.Body),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &bridgev2.MatrixMessageResponse{
+		DB: &database.Message{
+			ID:       networkid.MessageID(*resp.Sid),
+			SenderID: makeUserID(*resp.From),
+		},
+	}, nil
 }
 ```
 
