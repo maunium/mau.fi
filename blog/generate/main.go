@@ -37,12 +37,13 @@ type Post struct {
 	Tags    []string `yaml:"tags"`
 	Draft   bool     `yaml:"draft"`
 
+	OverrideCreatedAt string `yaml:"override_created_at"`
+
 	HasCodeBlocks bool `yaml:"has_code_blocks"`
 
 	FirstParagraph template.HTML `yaml:"-"`
 	Words          int           `yaml:"-"`
 
-	Date      string        `yaml:"-"`
 	CreatedAt time.Time     `yaml:"-"`
 	UpdatedAt time.Time     `yaml:"-"`
 	Content   template.HTML `yaml:"-"`
@@ -240,7 +241,9 @@ func main() {
 		meta.Content = template.HTML(headerRegex.ReplaceAllString(meta.ContentWithoutLinkifiedHeaders, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`))
 		meta.Words = WordCount(meta.ContentWithoutLinkifiedHeaders)
 		meta.CreatedAt, meta.UpdatedAt = getFileDates(path)
-		meta.Date = meta.CreatedAt.Format("2006-01-02")
+		if meta.OverrideCreatedAt != "" {
+			meta.CreatedAt = exerrors.Must(time.Parse("2006-01-02 15:04:05 -07:00", meta.OverrideCreatedAt))
+		}
 		meta.HasCodeBlocks = strings.Contains(meta.ContentWithoutLinkifiedHeaders, `class="chroma"`)
 		firstParagraphMatch := firstParagraphRegex.FindStringSubmatch(meta.ContentWithoutLinkifiedHeaders)
 		if firstParagraphMatch != nil {

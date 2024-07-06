@@ -5,7 +5,7 @@
         Posted on
         <time datetime="{{ .CreatedAt.Format "2006-01-02T15:04:05Z07:00" }}"
               title="{{ .CreatedAt.Format "2006-01-02 15:04:05 MST" }}">
-            {{ .Date }}
+            {{ .CreatedAt.Format "2006-01-02" }}
         </time>
     {{ end }}
     •
