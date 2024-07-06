@@ -188,18 +188,22 @@ purpose is to fill the `Client` property of `UserLogin` with the network
 client. This function should not do anything else, actually connecting to the
 remote network (if applicable) happens later in `NetworkAPI.Connect`.
 
-In the case of Twilio, we'll initialize the go-twilio client here:
+In the case of Twilio, we'll initialize the go-twilio client here. We're also
+initializing a `RequestValidator`. It's used for the webhooks, which we'll come
+back to later.
 
 ```go
 func (tc *TwilioConnector) LoadUserLogin(ctx context.Context, login *bridgev2.UserLogin) error {
+	authToken := login.Metadata.Extra["auth_token"].(string)
 	restClient := twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username:   login.Metadata.Extra["api_key"].(string),
-		Password:   login.Metadata.Extra["api_secret"].(string),
+		Password:   authToken,
 		AccountSid: login.Metadata.Extra["account_sid"].(string),
 	})
+	validator := client.NewRequestValidator(authToken)
 	login.Client = &TwilioClient{
-		UserLogin: login,
-		Twilio:    restClient,
+		UserLogin:        login,
+		Twilio:           restClient,
+		RequestValidator: validator,
 	}
 	return nil
 }
@@ -210,8 +214,9 @@ Next, we'll need to actually define `TwilioClient` and implement the `NetworkAPI
 
 ```go
 type TwilioClient struct {
-	UserLogin *bridgev2.UserLogin
-	Twilio    *twilio.RestClient
+	UserLogin        *bridgev2.UserLogin
+	Twilio           *twilio.RestClient
+	RequestValidator client.RequestValidator
 }
 
 var _ bridgev2.NetworkAPI = (*TwilioClient)(nil)
@@ -371,14 +376,22 @@ func (tc *TwilioConnector) CreateLogin(ctx context.Context, user *bridgev2.User,
 ```
 
 ### `TwilioLogin`
-
 Then we need to define the actual `TwilioLogin` type that `CreateLogin` returns:
 
 ```go
 type TwilioLogin struct {
-	User *bridgev2.User
+	User         *bridgev2.User
+	Client       *twilio.RestClient
+	PhoneNumbers []twilioPhoneNumber
+	AccountSID   string
+	AuthToken    string
 }
 ```
+
+We have a bunch of extra fields in addition to the `User`. They are used to
+store data when there are multiple login steps. Specifically, if the Twilio
+account has more than one phone number, we'll return a second step asking which
+one to use.
 
 Here the interface implementation assertion is quite important. Returning
 `TwilioLogin` from `CreateLogin` ensures that the interface implements
@@ -397,7 +410,7 @@ After that, we'll have three methods that need to be implemented: `Start`,
 Start returns the first step of the login process. For other networks that
 require a connection, this is probably also where the connection would be
 established. For Twilio, we don't have anything to connect to initially, we just
-want the user to provide their API keys.
+want the user to provide their account SID and auth token.
 
 ```go
 func (tl *TwilioLogin) Start(ctx context.Context) (*bridgev2.LoginStep, error) {
@@ -414,14 +427,10 @@ func (tl *TwilioLogin) Start(ctx context.Context) (*bridgev2.LoginStep, error) {
 					Pattern: `^AC[0-9a-fA-F]{32}$`,
 				},
 				{
-					Type: bridgev2.LoginInputFieldTypeUsername,
-					ID:   "api_key",
-					Name: "API key",
-				},
-				{
-					Type: bridgev2.LoginInputFieldTypePassword,
-					ID:   "api_secret",
-					Name: "API secret",
+					Type:    bridgev2.LoginInputFieldTypePassword,
+					ID:      "auth_token",
+					Name:    "Twilio auth token",
+					Pattern: "^[0-9a-f]{32}$",
 				},
 			},
 		},
@@ -430,7 +439,147 @@ func (tl *TwilioLogin) Start(ctx context.Context) (*bridgev2.LoginStep, error) {
 ```
 
 ### `SubmitUserInput` and finishing the login
-TODO this section
+After the user provides the values, we'll get a call to `SubmitUserInput`.
+
+This will be a more complicated function. First, we need to validate the
+credentials and get a list of phone numbers available on the Twilio account.
+After that, we either finish the login if there's only one number, or ask the
+user which one to use if there are multiple. If we ask the user, then we'll get
+another call to `SubmitUserInput`, which means we need to remember the data from
+the first call. After a successful login, we prepare the `UserLogin` instance.
+
+Let's split up the function to keep it more readable. First, `SubmitUserInput`
+itself. We have two paths, so we'll just split it into two calls. If `Client` is
+not set in `TwilioLogin`, we're in the first step where we want API keys. If it
+is set, we want to choose a phone number.
+
+```go
+func (tl *TwilioLogin) SubmitUserInput(ctx context.Context, input map[string]string) (*bridgev2.LoginStep, error) {
+	if tl.Client == nil {
+		return tl.submitAPIKeys(ctx, input)
+	} else {
+		return tl.submitChosenPhoneNumber(ctx, input)
+	}
+}
+```
+
+Then the API key submit function.
+
+```go
+type twilioPhoneNumber struct {
+	SID          string
+	Number       string
+	PrettyNumber string
+}
+
+func (tl *TwilioLogin) submitAPIKeys(ctx context.Context, input map[string]string) (*bridgev2.LoginStep, error) {
+	tl.AccountSID = input["account_sid"]
+	tl.AuthToken = input["auth_token"]
+	twilioClient := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Password:   tl.AuthToken,
+		AccountSid: tl.AccountSID,
+	})
+	phoneNumbers, err := twilioClient.Api.ListIncomingPhoneNumber(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list phone numbers: %w", err)
+	}
+	var numbers []twilioPhoneNumber
+	for _, number := range phoneNumbers {
+		if number.Status == nil || number.PhoneNumber == nil || *number.Status != "in-use" {
+			continue
+		}
+		numbers = append(numbers, twilioPhoneNumber{
+			SID:          *number.Sid,
+			Number:       *number.PhoneNumber,
+			PrettyNumber: *number.FriendlyName,
+		})
+	}
+	tl.Client = twilioClient
+	tl.PhoneNumbers = numbers
+	if len(numbers) == 0 {
+		return nil, fmt.Errorf("no active phone numbers found")
+	} else if len(numbers) == 1 {
+		return tl.finishLogin(ctx, numbers[0])
+	} else {
+		phoneNumberList := make([]string, len(numbers))
+		for i, number := range numbers {
+			phoneNumberList[i] = fmt.Sprintf("* %s", number.Number)
+		}
+		return &bridgev2.LoginStep{
+			Type:         bridgev2.LoginStepTypeUserInput,
+			StepID:       "fi.mau.twilio.choose_number",
+			Instructions: "Your Twilio account has multiple phone numbers. Please choose one:\n\n" + strings.Join(phoneNumberList, "\n"),
+			UserInputParams: &bridgev2.LoginUserInputParams{
+				Fields: []bridgev2.LoginInputDataField{{
+					Type: bridgev2.LoginInputFieldTypePhoneNumber,
+					ID:   "chosen_number",
+					Name: "Phone number",
+				}},
+			},
+		}, nil
+	}
+}
+```
+
+and the phone number submit function
+
+```go
+var numberCleaner = strings.NewReplacer("-", "", " ", "", "(", "", ")", "")
+
+func (tl *TwilioLogin) submitChosenPhoneNumber(ctx context.Context, input map[string]string) (*bridgev2.LoginStep, error) {
+	chosenNumber := numberCleaner.Replace(input["chosen_number"])
+	numberIdx := slices.IndexFunc(tl.PhoneNumbers, func(e twilioPhoneNumber) bool {
+		return e.Number == chosenNumber
+	})
+	if numberIdx == -1 {
+		return nil, fmt.Errorf("invalid phone number")
+	}
+	return tl.finishLogin(ctx, tl.PhoneNumbers[numberIdx])
+}
+```
+
+and finally the finish function, which can be called from either path and just
+creates the `UserLogin` object.
+
+```go
+func (tl *TwilioLogin) finishLogin(ctx context.Context, phoneNumber twilioPhoneNumber) (*bridgev2.LoginStep, error) {
+	ul, err := tl.User.NewLogin(ctx, &database.UserLogin{
+		ID: networkid.UserLoginID(tl.AccountSID),
+		Metadata: database.UserLoginMetadata{
+			StandardUserLoginMetadata: database.StandardUserLoginMetadata{
+				RemoteName: phoneNumber.PrettyNumber,
+			},
+			Extra: map[string]any{
+				"phone":       phoneNumber.Number,
+				"phone_sid":   phoneNumber.SID,
+				"auth_token":  tl.AuthToken,
+				"account_sid": tl.AccountSID,
+			},
+		},
+	}, &bridgev2.NewLoginParams{
+		LoadUserLogin: func(ctx context.Context, login *bridgev2.UserLogin) error {
+			login.Client = &TwilioClient{
+				UserLogin:        login,
+				Twilio:           tl.Client,
+				RequestValidator: client.NewRequestValidator(tl.AuthToken),
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &bridgev2.LoginStep{
+		Type:         bridgev2.LoginStepTypeComplete,
+		StepID:       "fi.mau.twilio.complete",
+		Instructions: "Successfully logged in",
+		CompleteParams: &bridgev2.LoginCompleteParams{
+			UserLoginID: ul.ID,
+			UserLogin:   ul,
+		},
+	}, nil
+}
+```
 
 ### `Cancel`
 Cancel is called if the user cancels the login process. For networks that create
@@ -535,7 +684,7 @@ Each `-X` flag sets the value of a variable in the binary. We set four variables
   message when we're not on a tag.
 * `Commit` is fairly straightforward, it's just the commit hash of the
   current commit (`HEAD`), which is easiest to find using `git rev-parse HEAD`.
-* `BuildTime` is the current time in ISO 8601 format.
+* `BuildTime` is the current time in ISO 8601/RFC3339 format.
 * Finally, we set `GoModVersion` inside mautrix-go to the version we extracted
   from `go.mod`.
 
