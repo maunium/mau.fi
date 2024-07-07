@@ -39,7 +39,7 @@ struct is the main entrypoint to the connector. It is passed to the central
 bridge module and is used to initialize other things.
 
 ```go
-package main
+package connector
 
 import (
     "maunium.net/go/mautrix/bridgev2"
@@ -1044,3 +1044,10 @@ starting from the "Configuring and running" part.
 After the bridge is running, start a chat with the bridge bot, and send `login`
 to start the login process. Then send your API keys as instructed, and you're
 good to go!
+
+## Conclusion
+If you want to ask anything related to mautrix-go or this post, feel free to
+join [#go:maunium.net]. [This post] also accepts pull requests.
+
+[#go:maunium.net]: https://matrix.to/#/#go:maunium.net
+[this post]: https://github.com/maunium/mau.fi/blob/main/blog/posts/2024-07-xx-megabridge-twilio.md
