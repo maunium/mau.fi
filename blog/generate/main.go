@@ -44,12 +44,11 @@ type Post struct {
 	FirstParagraph template.HTML `yaml:"-"`
 	Words          int           `yaml:"-"`
 
-	CreatedAt time.Time     `yaml:"-"`
-	UpdatedAt time.Time     `yaml:"-"`
-	FileName  string        `yaml:"-"`
-	Content   template.HTML `yaml:"-"`
-
-	ContentWithoutLinkifiedHeaders string `yaml:"-"`
+	CreatedAt  time.Time     `yaml:"-"`
+	UpdatedAt  time.Time     `yaml:"-"`
+	FileName   string        `yaml:"-"`
+	Content    template.HTML `yaml:"-"`
+	RSSContent string        `yaml:"-"`
 }
 
 type Tag struct {
@@ -73,7 +72,7 @@ func (p *Post) ToRSS() *feeds.Item {
 		Id:          p.Slug,
 		Updated:     p.UpdatedAt,
 		Created:     p.CreatedAt,
-		Content:     p.ContentWithoutLinkifiedHeaders,
+		Content:     p.RSSContent,
 	}
 }
 
@@ -94,6 +93,17 @@ var gm = goldmark.New(
 	),
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),
+	),
+	goldmark.WithRendererOptions(
+		goldmarkhtml.WithUnsafe(),
+	),
+)
+
+var rssGM = goldmark.New(
+	goldmark.WithExtensions(
+		extension.Strikethrough,
+		extension.Table,
+		&frontmatter.Extender{},
 	),
 	goldmark.WithRendererOptions(
 		goldmarkhtml.WithUnsafe(),
@@ -236,16 +246,19 @@ func main() {
 		ctx := parser.NewContext()
 		exerrors.PanicIfNotNil(gm.Convert(data, &buf, parser.WithContext(ctx)))
 		exerrors.PanicIfNotNil(frontmatter.Get(ctx).Decode(&meta))
+		mainContentStr := buf.String()
+		buf.Reset()
+		exerrors.PanicIfNotNil(rssGM.Convert(data, &buf))
+		meta.RSSContent = buf.String()
 		meta.FileName = "posts/" + file.Name()
-		meta.ContentWithoutLinkifiedHeaders = buf.String()
-		meta.Content = template.HTML(headerRegex.ReplaceAllString(meta.ContentWithoutLinkifiedHeaders, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`))
-		meta.Words = WordCount(meta.ContentWithoutLinkifiedHeaders)
+		meta.Content = template.HTML(headerRegex.ReplaceAllString(mainContentStr, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`))
+		meta.HasCodeBlocks = strings.Contains(mainContentStr, `class="chroma"`)
+		meta.Words = WordCount(meta.RSSContent)
 		meta.CreatedAt, meta.UpdatedAt = getFileDates(path)
 		if meta.OverrideCreatedAt != "" {
 			meta.CreatedAt = exerrors.Must(time.Parse("2006-01-02 15:04:05 -07:00", meta.OverrideCreatedAt))
 		}
-		meta.HasCodeBlocks = strings.Contains(meta.ContentWithoutLinkifiedHeaders, `class="chroma"`)
-		firstParagraphMatch := firstParagraphRegex.FindStringSubmatch(meta.ContentWithoutLinkifiedHeaders)
+		firstParagraphMatch := firstParagraphRegex.FindStringSubmatch(meta.RSSContent)
 		if firstParagraphMatch != nil {
 			meta.FirstParagraph = template.HTML(firstParagraphMatch[1])
 		}
