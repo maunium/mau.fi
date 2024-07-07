@@ -1019,6 +1019,10 @@ func (tc *TwilioClient) ResolveIdentifier(ctx context.Context, identifier string
 }
 ```
 
+That's everything needed from the connector to enable starting chats. With that
+function implemented, the `resolve-identifier` and `start-chat` bot commands
+as well as the corresponding provisioning APIs will work.
+
 ## Main function
 Now that we have a functional network connector, all that's left is to wrap it
 up with a main function. The main function goes in `cmd/mautrix-twilio/main.go`,
