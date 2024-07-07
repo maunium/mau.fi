@@ -184,6 +184,12 @@ func inlineifyURLs(input string) string {
 	})
 }
 
+func reverseSortPosts(a, b *Post) int {
+	return b.CreatedAt.Compare(a.CreatedAt)
+}
+
+const MaxPostsInFeed = 15
+
 func main() {
 	sitemapTplData := exerrors.Must(os.ReadFile("../sitemap.xml.tmpl"))
 	sitemapTpl := exerrors.Must(texttemplate.New("sitemap").Parse(string(sitemapTplData)))
@@ -220,21 +226,6 @@ func main() {
 		return !strings.HasSuffix(entry.Name(), ".md")
 	})
 	posts := make([]*Post, 0, len(postFiles))
-	feed := &feeds.Feed{
-		Title:       "Tulir Asokan",
-		Description: "",
-		Link: &feeds.Link{
-			Href: "https://mau.fi/blog/",
-		},
-		Items: make([]*feeds.Item, 0, len(postFiles)),
-	}
-	feed.Image = &feeds.Image{
-		Url:    "https://mau.fi/favicon.png",
-		Title:  feed.Title,
-		Link:   feed.Link.Href,
-		Width:  512,
-		Height: 512,
-	}
 	tags := make(map[string]*Tag)
 
 	for _, file := range postFiles {
@@ -267,7 +258,6 @@ func main() {
 		}
 
 		posts = append(posts, &meta)
-		feed.Items = append(feed.Items, meta.ToRSS())
 		for _, tag := range meta.Tags {
 			tagSlug := TagNameToSlug(tag)
 			tagMeta, ok := tags[tagSlug]
@@ -285,15 +275,35 @@ func main() {
 			if meta.CreatedAt.After(tagMeta.LastModified) {
 				tagMeta.LastModified = meta.CreatedAt
 			}
-			if meta.UpdatedAt.After(feed.Updated) {
-				feed.Updated = meta.UpdatedAt
-			}
-			if meta.CreatedAt.After(feed.Updated) {
-				feed.Updated = meta.CreatedAt
-			}
+		}
+	}
+	slices.SortFunc(posts, reverseSortPosts)
+	feed := &feeds.Feed{
+		Title:       "Tulir Asokan",
+		Description: "",
+		Link: &feeds.Link{
+			Href: "https://mau.fi/blog/",
+		},
+		Items: make([]*feeds.Item, min(len(posts), MaxPostsInFeed)),
+	}
+	feed.Image = &feeds.Image{
+		Url:    "https://mau.fi/favicon.png",
+		Title:  feed.Title,
+		Link:   feed.Link.Href,
+		Width:  512,
+		Height: 512,
+	}
+	for i, post := range posts[:len(feed.Items)] {
+		feed.Items[i] = post.ToRSS()
+		if post.UpdatedAt.After(feed.Updated) {
+			feed.Updated = post.UpdatedAt
+		}
+		if post.CreatedAt.After(feed.Updated) {
+			feed.Updated = post.CreatedAt
 		}
 	}
 	for _, tag := range tags {
+		slices.SortFunc(tag.Posts, reverseSortPosts)
 		path := filepath.Join("tags", tag.Slug)
 		exerrors.PanicIfNotNil(os.MkdirAll(path, 0755))
 		mustWriteFile(filepath.Join(path, "index.html"), templateExecutor(tpl, "index-tag.gohtml", tag))
@@ -304,7 +314,7 @@ func main() {
 			Link: &feeds.Link{
 				Href: fmt.Sprintf("https://mau.fi/blog/tags/%s/", tag.Slug),
 			},
-			Items: make([]*feeds.Item, len(tag.Posts)),
+			Items: make([]*feeds.Item, min(len(tag.Posts), MaxPostsInFeed)),
 		}
 		tagFeed.Image = &feeds.Image{
 			Url:    "https://mau.fi/favicon.png",
@@ -313,7 +323,7 @@ func main() {
 			Width:  512,
 			Height: 512,
 		}
-		for i, post := range tag.Posts {
+		for i, post := range tag.Posts[:len(tagFeed.Items)] {
 			tagFeed.Items[i] = post.ToRSS()
 		}
 		mustWriteFile(filepath.Join(path, "index.rss"), tagFeed.WriteRss)
