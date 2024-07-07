@@ -27,13 +27,30 @@ go get github.com/twilio/twilio-go
 
 When naming your bridge, please make up your own name and don't use `mautrix-*`.
 
-The next step is creating the network connector itself. The connector is
-effectively a library, so I put it in `pkg/connector/`.
-
 ## The connector itself
-Create a file called `connector.go` and define a struct called `TwilioConnector`.
+The next step is creating the network connector itself. The connector is
+effectively a library, so we'll put it in `pkg/connector/` and create a file
+called `connector.go`. Because this is a minimal example, that file will also be
+the only file in the connector package, but real connectors will probably want
+to split up the parts that come later into different files.
 
-Then, I add a line like this:
+Inside the file, let's start by defining a struct called `TwilioConnector`. This
+struct is the main entrypoint to the connector. It is passed to the central
+bridge module and is used to initialize other things.
+
+```go
+package main
+
+import (
+    "maunium.net/go/mautrix/bridgev2"
+)
+
+type TwilioConnector struct {
+	br *bridgev2.Bridge
+}
+```
+
+Then, add a line like this:
 
 ```go
 var _ bridgev2.NetworkConnector = (*TwilioConnector)(nil)
@@ -51,16 +68,12 @@ a quick way to create stub methods to implement the interface.
 
 ### `Init`
 The Init function is called when the bridge is initializing all types. It also
-gives you access to the bridge struct, which you'll need to store for later.
+gives you access to the bridge struct, which will need to be stored for later.
 
 This function should not do any kind of IO or other complicated operations, it
 should just initialize the in-memory struct.
 
 ```go
-type TwilioConnector struct {
-	br *bridgev2.Bridge
-}
-
 func (tc *TwilioConnector) Init(bridge *bridgev2.Bridge) {
 	tc.br = bridge
 }
@@ -73,7 +86,7 @@ connector needs its own database tables.
 
 In the case of Twilio, there's no need for special database tables, but we do
 need to register some routes, as receiving messages requires a webhook. Other
-networks that receive events via websockets/polling/etc may not need to do
+networks that receive events via websockets/polling/etc. may not need to do
 anything at all here.
 
 ```go
@@ -92,7 +105,7 @@ func (tc *TwilioConnector) Start(ctx context.Context) error {
 func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request) {}
 ```
 
-We'll come back to `ReceiveMessage` later
+We'll come back to `ReceiveMessage` [later](#twilio--matrix).
 
 ### `GetCapabilities`
 The `GetCapabilities` function on the network connector is used to signal some
@@ -942,7 +955,7 @@ because it's a command called mautrix-twilio rather than a part of the library.
 
 The main file doesn't need to be particularly complicated. First, we define some
 variables to store the version. These will be set at compile time using the `-X`
-linker flag.
+linker flag. We'll go over the exact flags in the next section.
 
 ```go
 var (
@@ -1005,8 +1018,8 @@ Each `-X` flag sets the value of a variable in the binary. We set four variables
   of only annotated ones). If you use annotated tags for releases, you may want
   to remove `--tags`. The `2>/dev/null` part is needed to suppress the error
   message when we're not on a tag.
-* `Commit` is fairly straightforward, it's just the commit hash of the
-  current commit (`HEAD`), which is easiest to find using `git rev-parse HEAD`.
+* `Commit` is fairly straightforward, it's just the commit hash of the current
+  commit (`HEAD`), which is easiest to find using `git rev-parse HEAD`.
 * `BuildTime` is the current time in ISO 8601/RFC3339 format.
 * Finally, we set `GoModVersion` inside mautrix-go to the version we extracted
   from `go.mod`.
