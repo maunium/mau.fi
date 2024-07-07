@@ -46,6 +46,7 @@ type Post struct {
 
 	CreatedAt time.Time     `yaml:"-"`
 	UpdatedAt time.Time     `yaml:"-"`
+	FileName  string        `yaml:"-"`
 	Content   template.HTML `yaml:"-"`
 
 	ContentWithoutLinkifiedHeaders string `yaml:"-"`
@@ -244,6 +245,7 @@ func main() {
 		ctx := parser.NewContext()
 		exerrors.PanicIfNotNil(gm.Convert(data, &buf, parser.WithContext(ctx)))
 		exerrors.PanicIfNotNil(frontmatter.Get(ctx).Decode(&meta))
+		meta.FileName = "posts/" + file.Name()
 		meta.ContentWithoutLinkifiedHeaders = buf.String()
 		meta.Content = template.HTML(headerRegex.ReplaceAllString(meta.ContentWithoutLinkifiedHeaders, `<$1 id="$2"><a class="header-anchor" href="#$2">$3</a></$1>`))
 		meta.Words = WordCount(meta.ContentWithoutLinkifiedHeaders)

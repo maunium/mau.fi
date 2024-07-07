@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>{{ .Title }} - Tulir Asokan</title>
     <link rel="icon" href="/favicon.png" type="image/png"/>
+    <link rel="alternate" type="text/markdown" href="/blog/{{ .FileName }}"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="{{ .Summary }}"/>
     <meta name="author" content="Tulir Asokan"/>
@@ -41,7 +42,7 @@
             {{ .Content }}
         </article>
     </main>
-    {{ template "footer.gohtml" }}
+    {{ template "footer.gohtml" .FileName }}
     {{ if .HasCodeBlocks }}
         <script async src="/blog/extra/copy.js"></script>
     {{ end }}
