@@ -46,7 +46,7 @@ compile if the value implements the interface. The variable name is the blank
 identifier `_`, which means the value will be discarded after being evaluated.
 
 If you're using a smart editor, it should complain that `*TwilioConnector` does
-in fact not implement `bridgev2.NetworkConnector`, and possibly even offer you
+not in fact implement `bridgev2.NetworkConnector`, and possibly even offer you
 a quick way to create stub methods to implement the interface.
 
 ### `Init`
@@ -97,7 +97,7 @@ We'll come back to `ReceiveMessage` later
 ### `GetCapabilities`
 The `GetCapabilities` function on the network connector is used to signal some
 bridge-wide capabilities, like disappearing message support. Twilio doesn't
-have any of the relevant features, so we'll just leave this empty:
+have any of the relevant features, so we'll just leave this empty.
 
 ```go
 func (tc *TwilioConnector) GetCapabilities() *bridgev2.NetworkGeneralCapabilities {
@@ -107,6 +107,28 @@ func (tc *TwilioConnector) GetCapabilities() *bridgev2.NetworkGeneralCapabilitie
 
 ### `GetName`
 The `GetName` function is used to customize the name of the bridge.
+
+* `DisplayName` is a simple human-readable name for the network. It doesn't have
+  any particular rules. It usually starts with a capital letter. This is used in
+  lots of places.
+* `NetworkURL` is the website associated with the network.
+  This is used in the `protocol` section of `m.bridge` events.
+* `NetworkIcon` is a `mxc://` URI which contains the logo of the network.
+  This is used in the `protocol` section of `m.bridge` events, as well as in the
+  avatar of the bridge bot user.
+* `NetworkID` is a string that uniquely identifies the network. If there are
+  multiple bridge implementations for the same network, they should use the same
+  ID. This is conventionally all lowercase.
+* `BeeperBridgeType` identifies the specific bridge implementation. The Go
+  module import path is a good option for this to ensure uniqueness, but bridges
+  used by Beeper use shorter types (e.g. the Go rewrite of the Discord bridge
+  used `discordgo`).
+* `DefaultPort` can optionally be set to change the default port when generating
+  the example config. It is not required and will default to `8008` when unset.
+  All mautrix bridges use ports defined in [mau.fi/ports](https://mau.fi/ports).
+* `DefaultCommandPrefix` can optionally be set to change the default command
+  prefix when generating the example config. It is not required and will default
+  to `!` followed by the `NetworkID`.
 
 ```go
 func (tc *TwilioConnector) GetName() bridgev2.BridgeName {
@@ -144,7 +166,7 @@ done in any case. There are two benefits to this system:
   out which fields have changed.
 
 The Twilio connector doesn't need any special fields, so we can just return nil
-values:
+values.
 
 ```go
 func (tc *TwilioConnector) GetConfig() (example string, data any, upgrader configupgrade.Upgrader) {
@@ -190,9 +212,8 @@ purpose is to fill the `Client` property of `UserLogin` with the network
 client. This function should not do anything else, actually connecting to the
 remote network (if applicable) happens later in `NetworkAPI.Connect`.
 
-In the case of Twilio, we'll initialize the go-twilio client here. We're also
-initializing a `RequestValidator`. It's used for the webhooks, which we'll come
-back to later.
+We'll initialize the go-twilio client here. We're also initializing a
+`RequestValidator`. It's used for the webhooks, which we'll come back to later.
 
 ```go
 func (tc *TwilioConnector) LoadUserLogin(ctx context.Context, login *bridgev2.UserLogin) error {
@@ -289,10 +310,16 @@ func (tc *TwilioClient) LogoutRemote(ctx context.Context) {}
 
 ### `GetCapabilities`
 This is similar to the network connector's GetCapabilities method, but is scoped
-to a user login and a portal.
+to a user login and a portal. Currently, these fields are only used to check
+events before passing them to the network connector. Some of the fields are not
+used at all yet. The plan is to also send these fields to the room as a state
+event, so that clients could display limits directly to the user. The state
+event will likely use [MSC4110] (or at least something similar).
+
+[MSC4110]: https://github.com/matrix-org/matrix-spec-proposals/pull/4110
 
 For now, we don't really need to define any fields, but let's include Twilio's
-maximum message length:
+maximum message length.
 
 ```go
 func (tc *TwilioClient) GetCapabilities(ctx context.Context, portal *bridgev2.Portal) *bridgev2.NetworkRoomCapabilities {
@@ -351,7 +378,7 @@ equality.
 
 For this bridge, we're segregating different logins to have their own portals,
 which means this function is not actually necessary, and we could just hardcode
-it to return `false`. It's not hard to implement though, so let's do it anyway:
+it to return `false`. It's not hard to implement though, so let's do it anyway.
 
 ```go
 func (tc *TwilioClient) IsThisUser(ctx context.Context, userID networkid.UserID) bool {
@@ -465,10 +492,9 @@ In addition to the three real step types, there's a fourth special type
 indicating the login was successful.
 
 ### `GetLoginFlows` & `CreateLogin`
-
 In the case of Twilio, the user just needs to provide their API keys, so we'll
 use the user input type. First, we'll implement the two functions in the network
-connector:
+connector.
 
 ```go
 func (tc *TwilioConnector) GetLoginFlows() []bridgev2.LoginFlow {
@@ -509,7 +535,7 @@ Here the interface implementation assertion is quite important. Returning
 `TwilioLogin` from `CreateLogin` ensures that the interface implements
 `bridgev2.LoginProcess`, but most login flows also need to implement one or more
 of the step type specific interfaces. In this case, we're using the user input
-type, so we want to make sure `bridgev2.LoginProcessUserInput` is implemented:
+type, so we want to make sure `bridgev2.LoginProcessUserInput` is implemented.
 
 ```go
 var _ bridgev2.LoginProcessUserInput = (*TwilioLogin)(nil)
@@ -635,7 +661,9 @@ func (tl *TwilioLogin) submitAPIKeys(ctx context.Context, input map[string]strin
 }
 ```
 
-and the phone number submit function
+Choosing the phone number is fairly simple, as we already have a valid token and
+have fetched the list of phone numbers. We just need to find the phone number
+the user chose.
 
 ```go
 func (tl *TwilioLogin) submitChosenPhoneNumber(ctx context.Context, input map[string]string) (*bridgev2.LoginStep, error) {
@@ -651,8 +679,10 @@ func (tl *TwilioLogin) submitChosenPhoneNumber(ctx context.Context, input map[st
 }
 ```
 
-and finally the finish function, which can be called from either path and just
-creates the `UserLogin` object.
+Finally, the finish function, which can be called from either path and creates
+the `UserLogin` object. In addition to creating the object, we also send our
+webhook URL to Twilio. We'll define the `GetWebhookURL` function later when
+implementing `ReceiveMessages`.
 
 ```go
 func (tl *TwilioLogin) finishLogin(ctx context.Context, phoneNumber twilioPhoneNumber) (*bridgev2.LoginStep, error) {
@@ -729,12 +759,21 @@ To receive messages from Twilio, we need to implement the `ReceiveMessages`
 function that we created to handle HTTP webhooks. Before that, let's define the
 webhook URLs, which was used in the login section.
 
+We don't need to check if `Matrix` implements `MatrixConnectorWithServer`,
+because we already validated that in `Start`. We can just cast it to access
+`GetPublicAddress` and then append our path. We include the user login ID in the
+in order to correctly route incoming webhooks.
+
 ```go
 func (tc *TwilioClient) GetWebhookURL() string {
 	server := tc.UserLogin.Bridge.Matrix.(bridgev2.MatrixConnectorWithServer)
 	return fmt.Sprintf("%s/_twilio/%s/receive", server.GetPublicAddress(), tc.UserLogin.ID)
 }
 ```
+
+The `ReceiveMessages` function contains a lot of boilerplate code that the
+Twilio library could handle, but doesn't. The main bridge-specific code is
+finding the user login based on the path parameter.
 
 ```go
 func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request) {
@@ -826,8 +865,37 @@ func (tc *TwilioClient) HandleWebhook(ctx context.Context, params map[string]str
 }
 ```
 
-The convert message function is also very simple, as we only support plain text
-messages for now.
+Let's go over each of the fields we're filling:
+
+* `Type` is the event type. It's a normal message.
+* `LogContext` is a function that adds structured fields to the event handler's
+  zerolog logger. By default, the logger only has the portal key and user login
+  ID, so other things should be added here.
+* `PortalKey` is the ID of the chat. This is a combination of a portal ID and an
+  optional "receiver". Receivers can be used to segregate portals, so that if
+  multiple logged-in users have the same chat, they'll still get separate portal
+  rooms. Most networks should use receivers for DMs, but it is also possible to
+  use them for all rooms if you don't want any portals to be shared. If there's
+  no receiver, then users will be added to the same Matrix room.
+* `Data` is the event data itself. This is only here so that it can be passed to
+  the message convert function.
+* `CreatePortal` tells the central bridge module that we want it to create a
+  portal room if one doesn't already exist for the given portal key. The bridge
+  will then call `GetChatInfo` to get the info of the chat to create.
+* `ID` is the message ID.
+* `Sender` is the sender of the message. For networks where the user can send
+  messages from other clients, you should also fill `IsFromMe` and/or
+  `SenderLogin` appropriately. For Twilio, we'll just assume you can't send
+  messages from other clients (we don't support receiving those anyway), so we
+  don't need to fill anything else than `Sender`.
+* `Timestamp` is the message timestamp. Twilio doesn't seem to provide
+  timestamps, so we just declare that the message was sent now.
+* `ConvertMessageFunc` is a function that gets `Data`, the `Portal` object as
+  well as a `MatrixAPI` and returns the Matrix events that should be sent.
+
+The convert message function is very simple, as we only support plain text
+messages for now. If you wanted to bridge media, you'd download it from the
+remote network and reupload it to Matrix using `intent.UploadMedia`.
 
 ```go
 func (tc *TwilioClient) convertMessage(ctx context.Context, portal *bridgev2.Portal, intent bridgev2.MatrixAPI, data map[string]string) (*bridgev2.ConvertedMessage, error) {
