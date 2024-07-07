@@ -267,11 +267,11 @@ check. However, if you implement any of the optional extra interfaces, then the
 explicit assertions become very useful, as there's nothing else ensuring the
 correct functions are implemented.
 
-### `Connect` and `Disconnect`
+### `Connect`
 For most networks which use persistent connections, this is where you'd set up
-the connection and disconnect it. Twilio doesn't use a persistent connection, so
-technically we don't need to do anything here. However, we should still check
-access token validity here.
+the connection. Twilio doesn't use a persistent connection, so technically we
+don't need to do anything here. However, we should still check access token
+validity here.
 
 ```go
 func (tc *TwilioClient) Connect(ctx context.Context) error {
@@ -294,7 +294,10 @@ func (tc *TwilioClient) Connect(ctx context.Context) error {
 }
 ```
 
-Disconnect doesn't need to do anything since there's no persistent connection.
+### `Disconnect`
+For networks with persistent connections, Disconnect should tear down the
+connection. Twilio doesn't have a persistent connection, so we don't need to do
+anything here.
 
 ```go
 func (tc *TwilioClient) Disconnect() {}
