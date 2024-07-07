@@ -951,6 +951,74 @@ func (tc *TwilioClient) HandleMatrixMessage(ctx context.Context, msg *bridgev2.M
 }
 ```
 
+## Bonus feature: starting chats
+We've implemented everything that's strictly necessary for a bridge to work, but
+let's add one optional feature on top: creating new portal rooms. To do this,
+we'll add another interface assertion for `TwilioClient`:
+
+```go
+var _ bridgev2.IdentifierResolvingNetworkAPI = (*TwilioClient)(nil)
+```
+
+The interface requires us to implement the `ResolveIdentifier` method, which is
+used for both checking if an identifier is reachable and actually starting a
+direct chat. There are further optional interfaces for creating group chats with
+resolved identifiers, but we don't support group chats at all here, so let's
+stick to DMs.
+
+The function just gets a raw string which is provided by the user. If you wanted
+to make a fancy Twilio bridge, you'd probably use the lookup API to get more
+info about the phone number, but we'll just do basic validation to make sure the
+input is a number.
+
+After validating the number, we'll get the ghost and portal objects as well as
+their info. The info for both is the same shape as the `GetUserInfo` and
+`GetChatInfo` methods, so we'll just call them instead of duplicating the same
+behavior.
+
+We don't actually care about the `createChat` parameter here, because Twilio
+doesn't require creating chats explicitly. For networks which do require
+creating chats, you'd need to use the bool to decide whether it should be
+created or not. The `Chat` field in the response is mandatory when `createChat`
+is true, but can be omitted when it's false.
+
+We also don't create the portal room here: the central bridge module takes care
+of that using the info we return.
+
+```go
+func (tc *TwilioClient) ResolveIdentifier(ctx context.Context, identifier string, createChat bool) (*bridgev2.ResolveIdentifierResponse, error) {
+	e164Number, err := bridgev2.CleanPhoneNumber(identifier)
+	if err != nil {
+		return nil, err
+	}
+	userID := makeUserID(e164Number)
+	portalID := networkid.PortalKey{
+		ID:       makePortalID(e164Number),
+		Receiver: tc.UserLogin.ID,
+	}
+	ghost, err := tc.UserLogin.Bridge.GetGhostByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ghost: %w", err)
+	}
+	portal, err := tc.UserLogin.Bridge.GetPortalByID(ctx, portalID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get portal: %w", err)
+	}
+	ghostInfo, _ := tc.GetUserInfo(ctx, ghost)
+	portalInfo, _ := tc.GetChatInfo(ctx, portal)
+	return &bridgev2.ResolveIdentifierResponse{
+		Ghost:    ghost,
+		UserID:   userID,
+		UserInfo: ghostInfo,
+		Chat: &bridgev2.CreateChatResponse{
+			Portal:     portal,
+			PortalID:   portalID,
+			PortalInfo: portalInfo,
+		},
+	}, nil
+}
+```
+
 ## Main function
 Now that we have a functional network connector, all that's left is to wrap it
 up with a main function. The main function goes in `cmd/mautrix-twilio/main.go`,
