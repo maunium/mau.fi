@@ -1019,6 +1019,11 @@ func (tc *TwilioClient) ResolveIdentifier(ctx context.Context, identifier string
 }
 ```
 
+Technically we don't even need to get the portal object: the central bridge
+module would get it automatically based on `PortalID` if `Portal` is omitted.
+However, I wanted to reuse `GetChatInfo` and didn't want to refactor it to take
+a plain `PortalID` instead of a whole `Portal`.
+
 That's everything needed from the connector to enable starting chats. With that
 function implemented, the `resolve-identifier` and `start-chat` bot commands
 as well as the corresponding provisioning APIs will work.
