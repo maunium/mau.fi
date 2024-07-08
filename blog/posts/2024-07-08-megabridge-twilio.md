@@ -16,11 +16,12 @@ using the new bridgev2 module in mautrix-go. The whole bridge can be found at
 The first step to make a new Go project is to create a new directory and run
 `go mod init <module path>`, where `<module path>` is the import path of your
 new module (for example, the GitHub repo). In addition to that, we'll want to
-add the mautrix-go and Twilio libraries as dependencies.
+add the mautrix-go and Twilio libraries as dependencies. Since bridgev2 is
+under active development, we'll ask for `@master` instead of the latest tag.
 
 ```shell
 go mod init go.mau.fi/mautrix-twilio
-go get maunium.net/go/mautrix
+go get maunium.net/go/mautrix@master
 go get github.com/twilio/twilio-go
 ```
 
@@ -1123,6 +1124,20 @@ starting from the "Configuring and running" part.
 After the bridge is running, start a chat with the bridge bot, and send `login`
 to start the login process. Then send your API keys as instructed, and you're
 good to go!
+
+#### Running with Beeper
+If you're using Beeper, you can skip steps 1-4 and just tell bbctl to generate
+a megabridge config:
+
+```shell
+bbctl config --type bridgev2 -o config.yaml sh-anybridgename
+```
+
+Twilio is not the optimal example for this, as bbctl is optimized for bridges
+that don't require public HTTP endpoints, while Twilio does require one. You
+can get it to work by tweaking the config (specifically, disabling websocket
+mode and adding `public_address`). It should work more out of the box with
+bridges that don't need a HTTP server.
 
 ## Conclusion
 If you want to ask anything related to mautrix-go or this post, feel free to
