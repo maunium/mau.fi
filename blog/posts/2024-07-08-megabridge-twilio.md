@@ -7,7 +7,6 @@ tags:
 - Bridges
 - Matrix
 - Go
-draft: true
 ---
 In this post, I'll go over all the steps necessary to build a Twilio bridge
 using the new bridgev2 module in mautrix-go. The whole bridge can be found at
@@ -1130,4 +1129,4 @@ If you want to ask anything related to mautrix-go or this post, feel free to
 join [#go:maunium.net]. [This post] also accepts pull requests.
 
 [#go:maunium.net]: https://matrix.to/#/#go:maunium.net
-[this post]: https://github.com/maunium/mau.fi/blob/main/blog/posts/2024-07-xx-megabridge-twilio.md
+[this post]: https://github.com/maunium/mau.fi/blob/main/blog/posts/2024-07-08-megabridge-twilio.md
