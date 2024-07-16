@@ -62,7 +62,7 @@ includes a mostly-seamless migration path: you can simply drop the new bridge
 in place of the old one. It will automatically migrate the config file and
 database while preserving all existing logins, rooms and messages.
 
-There is one notable exception: in the old bridge, unencrypted rooms did not
+There is one notable exception: in the old bridge, unencrypted DM rooms did not
 include the bridge bot, while in the new one, all rooms include the bot. The
 migration does not yet add the bot to all rooms, so it's only safe to use if
 you have end-to-bridge encryption enabled.
