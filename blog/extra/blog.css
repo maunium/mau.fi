@@ -9,7 +9,7 @@ article > header > p {
 }
 
 article > header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 article a.header-anchor {
@@ -91,6 +91,7 @@ div.chroma-parent > .chroma > table {
 header.blog-post-header {
     border-bottom: 1px solid gray;
     margin-top: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 header.blog-post-header > h1 {
