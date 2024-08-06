@@ -37,6 +37,10 @@ pre {
     tab-size: 4;
 }
 
+img {
+    max-width: 100%;
+}
+
 div.chroma {
     overflow-x: scroll;
     font-size: 14px;
