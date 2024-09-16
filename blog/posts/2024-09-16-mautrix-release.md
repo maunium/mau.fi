@@ -13,11 +13,11 @@ Voice bridge as well.
 
 | Bridge/library    | Version                                                          |
 |-------------------|------------------------------------------------------------------|
-| mautrix-gmessages | [v0.5.0](https://github.com/mautrix/signal/releases/tag/v0.5.0)  |
+| mautrix-gmessages | [v0.5.0](https://github.com/mautrix/gmessages/releases/tag/v0.5.0)  |
 | mautrix-gvoice    | [v0.1.0](https://github.com/mautrix/gvoice/releases/tag/v0.1.0)  |
 | mautrix-meta      | [v0.4.0](https://github.com/mautrix/meta/releases/tag/v0.4.0)    |
 | mautrix-slack     | [v0.1.1](https://github.com/mautrix/slack/releases/tag/v0.1.1)   |
-| mautrix-signal    | [v0.7.1](https://github.com/mautrix/slack/releases/tag/v0.7.1)   |
+| mautrix-signal    | [v0.7.1](https://github.com/mautrix/signal/releases/tag/v0.7.1)   |
 | mautrix-go        | [v0.21.0](https://github.com/mautrix/go/releases/tag/v0.21.0)    |
 | go-util           | [v0.8.0](https://github.com/mautrix/go-util/releases/tag/v0.8.0) |
 
