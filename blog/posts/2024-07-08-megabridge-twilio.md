@@ -17,11 +17,11 @@ The first step to make a new Go project is to create a new directory and run
 `go mod init <module path>`, where `<module path>` is the import path of your
 new module (for example, the GitHub repo). In addition to that, we'll want to
 add the mautrix-go and Twilio libraries as dependencies. Since bridgev2 is
-under active development, we'll ask for `@master` instead of the latest tag.
+under active development, we'll ask for `@main` instead of the latest tag.
 
 ```shell
 go mod init go.mau.fi/mautrix-twilio
-go get maunium.net/go/mautrix@master
+go get maunium.net/go/mautrix@main
 go get github.com/twilio/twilio-go
 ```
 
