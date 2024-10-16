@@ -8,7 +8,6 @@ tags:
 - Matrix
 - gomuks
 - Meowlnir
-draft: true
 ---
 As expected, WhatsApp has been upgraded to a megabridge. Other bridges have
 received minor bugfixes, but nothing too exciting. In non-bridge news, hicli
@@ -38,7 +37,8 @@ December at least, possibly even next year.
 As mentioned in my [first post], I'm working on a high-level client framework
 to build a new web client and to replace the internals of gomuks. Back when I
 wrote that, Element Web was using 2-3 GB of ram. Now, it uses 3-6 GB and
-freezes completely several times a day.
+freezes completely several times a day, so making a replacement has become more
+urgent.
 
 [first post]: https://mau.fi/blog/2024-h1-mautrix-updates/#high-level-client-framework
 
