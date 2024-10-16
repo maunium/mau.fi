@@ -58,7 +58,7 @@ connect and then receives new events over websocket as the backend receives
 them from sync. Since the backend knows the exact order of rooms and their
 preview messages, it only takes a fraction of a second to send the first 100
 rooms to the frontend, which means there's no waiting time when reopening the
-frotend.
+frontend.
 
 It's significantly faster than Element Web and it needs less than 250 MB of ram
 for both the backend and the browser tab combined to handle my main account. In
