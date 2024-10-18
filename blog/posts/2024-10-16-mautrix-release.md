@@ -72,7 +72,7 @@ and/or mobile app. The web UI is not mobile optimized, but performance-wise it
 seems decent even on mobile browsers.
 
 ## Meowlnir
-Meowlnir now supports receiving reports via the standard Matrix [/report endpoınt].
+Meowlnir now supports receiving reports via the standard Matrix [/report endpoint].
 In addition to just forwarding reports to the management room, bot admins can
 also send commands to the bot in the report message, which allows quickly
 banning spammers without having to switch to the management room.
