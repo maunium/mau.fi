@@ -1,5 +1,5 @@
 ---
-title: October 2024 releases & progress
+title: October 2024 releases // hicli progress
 summary: A summary of the mautrix releases in October 2024
 slug: 2024-10-mautrix-release
 tags:

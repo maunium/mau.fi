@@ -1,5 +1,5 @@
 ---
-title: September 2024 releases & progress
+title: September 2024 releases // More media changes and Meowlnir
 summary: A summary of the mautrix releases in September 2024
 slug: 2024-09-mautrix-release
 tags:

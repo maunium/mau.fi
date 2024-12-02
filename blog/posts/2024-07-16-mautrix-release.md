@@ -1,5 +1,5 @@
 ---
-title: July 2024 releases
+title: July 2024 releases // Authenticated media & Megasignal
 summary: A summary of the mautrix releases in July 2024
 slug: 2024-07-mautrix-release
 tags:

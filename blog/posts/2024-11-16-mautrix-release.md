@@ -1,5 +1,5 @@
 ---
-title: November 2024 releases & progress
+title: November 2024 releases // More gomuks web progress
 summary: A summary of the mautrix releases in November 2024
 slug: 2024-11-mautrix-release
 tags:

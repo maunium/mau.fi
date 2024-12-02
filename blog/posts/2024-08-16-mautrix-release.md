@@ -1,5 +1,5 @@
 ---
-title: August 2024 releases & progress
+title: August 2024 releases // Megaslack is ready and progress on Meta/Google Messages
 summary: A summary of the mautrix releases in August 2024
 slug: 2024-08-mautrix-release
 tags:
