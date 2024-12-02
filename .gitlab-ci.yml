@@ -1,3 +1,6 @@
+variables:
+  GOTOOLCHAIN: local
+
 deploy:
   stage: deploy
   image: golang:1-alpine
