@@ -26,7 +26,7 @@ upgraded to a megabridge.
 
 ## Megabridge progress
 Bluesky is quickly gaining popularity and their current temporary chat protocol
-is very simple, so I decided to go ahead and write a bridge: <https://bsky.app/profile/tulir.fi/post/3lbv3cd7q3223>
+is very simple, so I decided to go ahead and write a bridge: <https://bsky.app/profile/tulir.fi/post/3lbv3cd7q3223>.
 It took a day to write, it's nearly fully featured and has around 1k lines of code.
 
 Twitter testing was expected to be stalled like last month, but then Twitter
