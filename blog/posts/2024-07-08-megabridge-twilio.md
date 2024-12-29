@@ -495,7 +495,7 @@ func (tc *TwilioClient) GetChatInfo(ctx context.Context, portal *bridgev2.Portal
 given user instead of a chat. The returned info will be applied as the ghost
 user's profile on Matrix.
 
-Because we're bridging SMS and don't have a contact lits, we don't really have
+Because we're bridging SMS and don't have a contact list, we don't really have
 any other info than the phone number itself. If we wanted to be fancy, we could
 format the phone number nicely for `Name`, but I couldn't find any convenient
 libraries similar to phonenumbers for Python.
