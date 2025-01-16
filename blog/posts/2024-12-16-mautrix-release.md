@@ -17,6 +17,7 @@ upgraded to a megabridge.
 | mautrix-gmessages | [v0.6.0](https://github.com/mautrix/gmessages/releases/v0.6.0)   |
 | mautrix-whatsapp  | [v0.11.2](https://github.com/mautrix/whatsapp/releases/v0.11.2)  |
 | mautrix-bluesky   | [v0.1.0](https://github.com/mautrix/bluesky/releases/v0.1.0)     |
+| mautrix-twitter   | [v0.2.0](https://github.com/mautrix/twitter/releases/v0.2.0)     |
 | mautrix-discord   | [v0.7.2](https://github.com/mautrix/discord/releases/v0.7.2)     |
 | mautrix-signal    | [v0.7.4](https://github.com/mautrix/signal/releases/v0.7.4)      |
 | mautrix-slack     | [v0.1.4](https://github.com/mautrix/slack/releases/v0.1.4)       |
