@@ -409,8 +409,8 @@ For now, we don't really need to define any fields, but let's include Twilio's
 maximum message length.
 
 ```go
-func (tc *TwilioClient) GetCapabilities(ctx context.Context, portal *bridgev2.Portal) *bridgev2.NetworkRoomCapabilities {
-	return &bridgev2.NetworkRoomCapabilities{
+func (tc *TwilioClient) GetCapabilities(ctx context.Context, portal *bridgev2.Portal) *event.RoomFeatures {
+	return &event.RoomFeatures{
 		MaxTextLength: 1600,
 	}
 }
@@ -419,8 +419,8 @@ func (tc *TwilioClient) GetCapabilities(ctx context.Context, portal *bridgev2.Po
 **Update March 2025:** As of January 2025, the old capability system in
 mautrix-go has been redone and is now sent as a state event to rooms. Instead
 of `*bridgev2.NetworkRoomCapabilities`, just return `*event.RoomFeatures` and
-the library will deal with sending the state event. The full documentation can
-be found at <https://github.com/mautrix/go/blob/main/event/capabilities.d.ts>.
+the library will deal with sending the state event. The full schema for the
+state event can be found at <https://github.com/mautrix/go/blob/main/event/capabilities.d.ts>.
 
 ## Identifiers
 Before we get to the next functions in `NetworkAPI`, we'll need to cover network
