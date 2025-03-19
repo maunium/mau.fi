@@ -118,6 +118,23 @@ func (tc *TwilioConnector) GetCapabilities() *bridgev2.NetworkGeneralCapabilitie
 }
 ```
 
+### `GetBridgeInfoVersion`
+This function was added in January 2025 along with the updates to the per-room
+`GetCapabilities` method on network clients (below, not the one right above).
+
+The `GetBridgeInfoVersion` function on the network connector returns two
+integers, which are usually just hardcoded version numbers. When you modify the
+room capabilities, you should increment the second return value to tell
+mautrix-go to resend all `com.beeper.room_features` state events. Similarly, if
+you modify something that affects the `uk.half-shot.bridge` state event,
+increment the first return value.
+
+```go
+func (tc *TwilioConnector) GetBridgeInfoVersion() (info, capabilities int) {
+	return 1, 1
+}
+```
+
 ### `GetName`
 The `GetName` function is used to customize the name of the bridge.
 
@@ -312,10 +329,18 @@ don't need to do anything here. However, we should still check access token
 validity here.
 
 ```go
-func (tc *TwilioClient) Connect(ctx context.Context) error {
+func (tc *TwilioClient) Connect(ctx context.Context) {
 	phoneNumbers, err := tc.Twilio.Api.ListIncomingPhoneNumber(nil)
 	if err != nil {
-		return fmt.Errorf("failed to list phone numbers: %w", err)
+		tc.UserLogin.BridgeState.Send(status.BridgeState{
+			StateEvent: status.StateBadCredentials,
+			Error:      "twilio-api-error",
+			Message:    "Failed to list phone numbers",
+			Info: map[string]any{
+				"go_error": err.Error(),
+			},
+		})
+		return
 	}
 	meta := tc.UserLogin.Metadata.(*UserLoginMetadata)
 	var numberFound bool
@@ -326,11 +351,19 @@ func (tc *TwilioClient) Connect(ctx context.Context) error {
 		}
 	}
 	if !numberFound {
-		return fmt.Errorf("phone number %s not found on account", meta.Phone)
+		tc.UserLogin.BridgeState.Send(status.BridgeState{
+			StateEvent: status.StateBadCredentials,
+			Error:      "twilio-phone-not-found",
+			Message:    fmt.Sprintf("phone number %s not found on account", meta.Phone),
+		})
+		return
 	}
-	return nil
 }
 ```
+
+**Update March 2025:** Previously this function was allowed to return errors,
+but it was later updated to not allow that. Instead, any connection errors are
+signaled using the `tc.UserLogin.BridgeState` queue.
 
 ### `Disconnect`
 For networks with persistent connections, Disconnect should tear down the
@@ -382,6 +415,12 @@ func (tc *TwilioClient) GetCapabilities(ctx context.Context, portal *bridgev2.Po
 	}
 }
 ```
+
+**Update March 2025:** As of January 2025, the old capability system in
+mautrix-go has been redone and is now sent as a state event to rooms. Instead
+of `*bridgev2.NetworkRoomCapabilities`, just return `*event.RoomFeatures` and
+the library will deal with sending the state event. The full documentation can
+be found at <https://github.com/mautrix/go/blob/main/event/capabilities.d.ts>.
 
 ## Identifiers
 Before we get to the next functions in `NetworkAPI`, we'll need to cover network
