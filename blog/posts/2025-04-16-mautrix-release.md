@@ -45,7 +45,7 @@ moderation bot, `!redact-recent` for redacting all recent messages,
 [@nexy7574] also contributed support for automatic unbans when a ban policy is
 removed.
 
-Meowlnir, my Synapse fork and synapse-http-antispam now have support for an
+Meowlnir, my Synapse fork, and synapse-http-antispam now have support for an
 experimental join rule which can be used to block joins based on a policy list.
 The rule is fully compatible with all servers as it (ab)uses the existing
 `restricted` join rule mechanism. The only downside is that it centralizes all
