@@ -28,11 +28,13 @@ smaller bug fixes. On the gomuks side, bandwidth usage has been improved.
 
 ## Bridges
 Nearly all bridges got a release this month, primarily to future-proof them
-against changes in future room versions. Room v12 is scheduled to be released
+against changes in future room versions. [Room v12] is scheduled to be released
 next week and it contains breaking changes to power levels and the `/createRoom`
 API. In order to ensure bridges can still create rooms when v12 becomes default,
 all bridges have been updated to hardcode v11 in create room requests. The next
 month's releases are expected to have proper support for v12.
+
+[Room v12]: https://matrix.org/blog/2025/07/security-predisclosure/
 
 WhatsApp's `@lid` support has received further improvements. LID DMs should now
 be merged into the phone number DM more consistently, and even if merging doesn't
