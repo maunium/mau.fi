@@ -97,13 +97,23 @@ func (tc *TwilioConnector) Start(ctx context.Context) error {
 	} else if server.GetPublicAddress() == "" {
 		return fmt.Errorf("public address of bridge not configured")
 	}
-	r := server.GetRouter().PathPrefix("/_twilio").Subrouter()
-	r.HandleFunc("/{loginID}/receive", tc.ReceiveMessage).Methods(http.MethodPost)
+	router := http.NewServeMux()
+	router.HandleFunc("POST /{loginID}/receive", tc.ReceiveMessage)
+	server.GetRouter().Handle("/_twilio/", exhttp.ApplyMiddleware(
+		router,
+		exhttp.StripPrefix("/_twilio"),
+		hlog.NewHandler(tc.br.Log.With().Str("component", "twilio webhooks").Logger()),
+		requestlog.AccessLogger(requestlog.Options{TrustXForwardedFor: true}),
+	))
 	return nil
 }
 
 func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request) {}
 ```
+
+**Update July 2025:** The gorilla/mux HTTP router in mautrix-go was replaced with
+the standard library. Subrouters/middlewares need to be applied slightly more
+manually now.
 
 We'll come back to `ReceiveMessage` [later](#twilio--matrix).
 
@@ -887,7 +897,7 @@ func (tc *TwilioConnector) ReceiveMessage(w http.ResponseWriter, r *http.Request
 
 	// Get the user login based on the path. We need it to find the right token
 	// to use for validating the request signature.
-	loginID := mux.Vars(r)["loginID"]
+	loginID := r.PathValue("loginID")
 	login := tc.br.GetCachedUserLoginByID(networkid.UserLoginID(loginID))
 	if login == nil {
 		w.WriteHeader(http.StatusNotFound)
