@@ -106,6 +106,10 @@ via the Go backend for authentication and decryption. I'll probably go for a
 service worker, but still need to figure out how to have it talk to the Go
 side for encryption keys and authentication.
 
+**Update:** media has been implemented and a demo is now available at
+<https://demo.gomuks.app>. It's still very fragile and will explode if you
+hold it wrong.
+
 ### Other changes
 * Room v12+ power level support in various places where it's relevant, like
   displaying moderation buttons and sorting the member list.
