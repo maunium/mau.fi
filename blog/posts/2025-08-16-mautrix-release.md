@@ -35,7 +35,7 @@ don't require installing Go.
 
 ## Bridges
 The legacy provisioning APIs (`/_matrix/provision/v1` and `../v2`) are now
-formally deprecated in all megabridges and will be released in next month's
+formally deprecated in all megabridges and will be removed in next month's
 releases. Anyone using the legacy APIs should migrate to the `/v3`
 [Megabridge provisioning API] immediately.
 
