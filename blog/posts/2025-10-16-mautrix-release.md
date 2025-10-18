@@ -98,6 +98,13 @@ Also note that until Synapse v1.141, enabling MSC4190 requires updating the
 bridge registration. See [the docs](https://docs.mau.fi/bridges/general/end-to-bridge-encryption.html#use-with-next-gen-auth-mas-msc4190)
 for more info.
 
+Self-signing the bridge bot is only the first step: it is not expected to remove
+warnings, but it's enough to be compatible under the [exception that MSC4153
+gives for bridges](https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/4153-invisible-crypto.md#clients-may-make-provisions-for-encrypted-bridges).
+The proper solution to remove warnings will be [MSC4350], which defines a way
+to explicitly allow the bridge bot to impersonate ghosts and double puppeted
+users.
+
 In addition to verification, the support for [MSC3202] (the `appservice` mode
 in the encryption config) was updated to work with Synapse, so it is now safe
 to enable as long as you regenerate the registration and enable the relevant
@@ -106,6 +113,7 @@ to enable as long as you regenerate the registration and enable the relevant
 [MSC3202]: https://github.com/matrix-org/matrix-spec-proposals/pull/3202
 [MSC4153]: https://github.com/matrix-org/matrix-spec-proposals/pull/4153
 [MSC4190]: https://github.com/matrix-org/matrix-spec-proposals/pull/4190
+[MSC4350]: https://github.com/matrix-org/matrix-spec-proposals/pull/4350
 
 ## gomuks
 gomuks was less active this month, but there is an account data explorer now in
