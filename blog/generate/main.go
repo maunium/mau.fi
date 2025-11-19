@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"maps"
 	"net/url"
 	"os"
 	"os/exec"
@@ -26,7 +27,6 @@ import (
 	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 	"go.abhg.dev/goldmark/frontmatter"
 	"go.mau.fi/util/exerrors"
-	"golang.org/x/exp/maps"
 	"golang.org/x/net/html"
 )
 
@@ -351,7 +351,7 @@ func main() {
 	mustWriteFile("../sitemap.xml", func(w io.Writer) error {
 		return sitemapTpl.Execute(w, &SitemapParams{
 			Posts:       posts,
-			Tags:        maps.Values(tags),
+			Tags:        slices.Collect(maps.Values(tags)),
 			BlogLastMod: feed.Updated,
 		})
 	})
