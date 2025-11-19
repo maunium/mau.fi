@@ -1,6 +1,5 @@
 variables:
   GOTOOLCHAIN: local
-  GIT_STRATEGY: clone
 
 deploy:
   stage: deploy
