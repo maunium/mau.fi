@@ -129,6 +129,7 @@ func getFileDates(path string) (createdAt, updatedAt time.Time) {
 		createdAt = time.Now()
 		return
 	}
+	fmt.Println(path, parts)
 	if len(parts) > 1 {
 		updatedAt = exerrors.Must(time.Parse(time.RFC3339, parts[0]))
 	}
