@@ -15,7 +15,7 @@ Go rewrite is also nearing completion.
 | Software          | Version                                                           |
 |-------------------|-------------------------------------------------------------------|
 | mautrix-whatsapp  | [v26.03](https://github.com/mautrix/whatsapp/releases/v0.2603.0)  |
-| mautrix-twitter   | [v26.03](https://github.com/mautrix/meta/releases/v0.2603.0)      |
+| mautrix-twitter   | [v26.03](https://github.com/mautrix/twitter/releases/v0.2603.0)   |
 | mautrix-signal    | [v26.03](https://github.com/mautrix/signal/releases/v0.2603.0)    |
 | mautrix-slack     | [v26.03](https://github.com/mautrix/slack/releases/v0.2603.0)     |
 | meowlnir          | [v26.03](https://github.com/maunium/meowlnir/releases/v0.2603.0)  |
