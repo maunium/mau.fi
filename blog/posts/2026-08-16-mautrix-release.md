@@ -17,8 +17,8 @@ bandwidth-saving features for gomuks, and new mascots!
 | mautrix-whatsapp  | [v26.08](https://github.com/mautrix/whatsapp/releases/v0.2608.0)  |
 | mautrix-telegram  | [v26.08](https://github.com/mautrix/telegram/releases/v0.2608.0)  |
 | mautrix-linkedin  | [v26.08](https://github.com/mautrix/linkedin/releases/v0.2608.0)  |
-| mautrix-twitter   | [v26.08](https://github.com/mautrix/twitter/releases/v0.2608.0)   |
 | mautrix-discord   | [v0.7.7](https://github.com/mautrix/discord/releases/v0.7.7)      |
+| mautrix-twitter   | [v26.08](https://github.com/mautrix/twitter/releases/v0.2608.0)   |
 | mautrix-signal    | [v26.08](https://github.com/mautrix/signal/releases/v0.2608.0)    |
 | mautrix-slack     | [v26.08](https://github.com/mautrix/slack/releases/v0.2608.0)     |
 | mautrix-meta      | [v26.08](https://github.com/mautrix/meta/releases/v0.2608.0)      |
