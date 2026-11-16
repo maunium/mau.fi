@@ -20,6 +20,7 @@ tags:
 | mautrix-signal    | [v26.11](https://github.com/mautrix/signal/releases/v0.2611.0)    |
 | mautrix-slack     | [v26.11](https://github.com/mautrix/slack/releases/v0.2611.0)     |
 | mautrix-meta      | [v26.11](https://github.com/mautrix/meta/releases/v0.2611.0)      |
+| meowlnir          | [v26.11](https://github.com/maunium/meowlnir/releases/v0.2611.0)  |
 | gomuks            | [v26.11](https://github.com/gomuks/gomuks/releases/v0.2611.0)     |
 | mautrix-go        | [v0.33.0](https://github.com/mautrix/go/releases/v0.33.0)         |
 | go-util           | [v0.11.1](https://github.com/mautrix/go-util/releases/v0.11.1)    |
